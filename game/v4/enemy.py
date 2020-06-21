@@ -1,11 +1,9 @@
 
-import pygame
 from game.v4.barrier import SquareBarrier
-from game.v4.perlin import PerlinNoise1D
+from perlin import PerlinNoise1D
 
-from pygame.constants import *
 from game.engine.constants import *
-from game.engine.helpers import merge_into_list_dicts, reduce_to_relevant_collisions
+from game.engine.helpers import merge_into_list_dicts
 
 
 class Enemy:
