@@ -1,6 +1,6 @@
 
 import pygame
-from game.v2.barrier import SquareBarrier
+from game.v3.barrier import SquareBarrier
 
 from pygame.constants import *
 from game.engine.constants import *
@@ -140,8 +140,8 @@ class Player:
         if DRAW_HELPERS:
             circle_radius = min(self.size) * 0.1
             circle_offsets = {
-                "FLOOR": [0, -0.5*self.size[1] / 2],
-                "CEILING": [0, 0.5*self.size[1] / 2],
+                "FLOOR": [0, -0.5*self.size[1]],
+                "CEILING": [0, 0.5*self.size[1]],
                 "LEFT_WALL": [-0.5*self.size[0], 0],
                 "RIGHT_WALL": [0.5*self.size[0], 0],
             }

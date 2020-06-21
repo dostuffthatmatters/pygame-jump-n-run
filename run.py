@@ -1,4 +1,4 @@
 
-from game.v2 import run
+from game.v3 import run
 
 run()
