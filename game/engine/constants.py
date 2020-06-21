@@ -8,6 +8,8 @@ RUN_VELOCITY = 10  # m/s
 JUMP_HEIGHT = 6  # meter
 JUMP_VELOCITY = math.sqrt(2 * GRAVITY * JUMP_HEIGHT)  # m/s
 
+COORDINATE_PRECISION = 2  # Decomals places of coordinates being stored
+
 """
 The game's physics-calculations are accurate, however:
 

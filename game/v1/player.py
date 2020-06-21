@@ -1,6 +1,6 @@
 
 import pygame
-from pygame import K_UP, K_DOWN, K_LEFT, K_RIGHT
+from pygame.constants import *
 from engine.constants import *
 
 class Player:
@@ -69,6 +69,7 @@ class Player:
             new_velocity[0] = -RUN_VELOCITY
         elif self.keypressed['RIGHT'] and not self.keypressed['LEFT']:
             new_velocity[0] = +RUN_VELOCITY
+
         self.velocity = new_velocity
 
         new_position = [
@@ -85,7 +86,9 @@ class Player:
             if new_position[0] > ((game.width/SCALING_FACTOR) - (self.width/2)):
                 self.velocity[0] = 0.0
                 new_position[0] = ((game.width/SCALING_FACTOR) - (self.width/2))
-        self.position = new_position
+
+        self.velocity = [round(v, COORDINATE_PRECISION) for v in self.velocity]
+        self.position = [round(p, COORDINATE_PRECISION) for p in new_position]
 
     @staticmethod
     def update_all(timedelta, game=None):

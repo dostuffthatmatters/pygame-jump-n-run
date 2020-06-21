@@ -1,5 +1,5 @@
 import pygame
-from pygame import K_w, K_a, K_s, K_d, K_UP, K_LEFT, K_DOWN, K_RIGHT
+from pygame.constants import *
 from game.engine.game import Game
 from game.engine.constants import *
 
@@ -12,6 +12,17 @@ def update(timedelta, game):
 
 def draw(game):
     game.draw_background()
+
+    player_count = len(Player.instances)
+    for i in range(player_count):
+        player = Player.instances[i]
+        game.draw_text(
+            f"{player.name}: position={player.position}",
+            x_left=5, y_top=(5+(i*25)), font_size=20, color=player.color
+        )
+
+    game.draw_text(f"{game.fps} FPS", x_left=5, y_top=(5+(player_count*25)), font_size=20)
+
     Player.draw_all(game)
     game.update()
 
@@ -20,7 +31,7 @@ def run():
     game = Game(
         width=50 * SCALING_FACTOR,
         height=20 * SCALING_FACTOR,
-        print_fps=True, max_fps=60
+        print_fps=False, max_fps=65
     )
 
     player_1 = Player(
