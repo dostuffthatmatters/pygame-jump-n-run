@@ -33,22 +33,26 @@ class SquareBarrier:
             is_number(y_top if y_top is not None else y_center), \
             "y has to be a number (integer or float)"
 
-        # self.x/self.y is referencing the blocks center
-        self.x = x_left + width/2 if x_left is not None else x_center
-        self.y = y_top - height/2 if y_top is not None else y_center
+        # self.position is referring to the blocks center
+        self.position = [
+            (x_left + (width/2)) if x_left is not None else x_center,
+            (y_top - (height/2)) if y_top is not None else y_center
+        ]
 
-        self.width = width
-        self.height = height
+        self.size = [
+            width,
+            height
+        ]
 
         self.color = color
 
         SquareBarrier.instances.append(self)
 
     def draw(self, game):
-        w = self.width * SCALING_FACTOR
-        h = self.height * SCALING_FACTOR
-        x = (self.x * SCALING_FACTOR) - (w/2)
-        y = game.height - ((self.y * SCALING_FACTOR) + (h/2))
+        w = self.size[0] * SCALING_FACTOR
+        h = self.size[1] * SCALING_FACTOR
+        x = (self.position[0] * SCALING_FACTOR) - (w/2)
+        y = game.height - ((self.position[1] * SCALING_FACTOR) + (h/2))
         game.draw_rect(x, y, w, h, color=self.color)
 
     @staticmethod
@@ -56,47 +60,60 @@ class SquareBarrier:
         for barrier in SquareBarrier.instances:
             barrier.draw(game)
 
-    @staticmethod
-    def create(x_left, y_top, width, height, color=(150, 150, 150)):
-        SquareBarrier(x_left=x_left, y_top=y_top, width=width, height=height, color=color)
+    def detect_collision(self, player):
+        dx_min = player.size[0]/2 + self.size[0]/2
+        dy_min = player.size[1]/2 + self.size[1]/2
 
-    def detect_collision(self, x_center, y_center, width, height):
-        dx_min = width/2 + self.width/2
-        dy_min = height/2 + self.height/2
+        dx = player.position[0] - self.position[0]  # dx > 0 = player is right from the barrier
+        dy = player.position[1] - self.position[1]  # dy > 0 = player is above the barrier
 
-        dx = x_center - self.x  # dx > 0 = player is right from the barrier
-        dy = y_center - self.y  # dy > 0 = player is above the barrier
+        horizontal_overlap = (dx_min - abs(dx))
+        vertical_overlap = (dy_min - abs(dy))
 
         collision = {}
 
-        if dx_min > abs(dx) and dy_min > abs(dy):
-            # Overlaps!
-
-            vertical_overlap = (dy_min-abs(dy))
-            horizontal_overlap = (dx_min-abs(dx))
+        if vertical_overlap > 0 and horizontal_overlap > 0:
 
             if vertical_overlap < horizontal_overlap:
                 if dy > 0:
-                    collision = {"FLOOR": self.y + self.height/2}
+                    collision = {"FLOOR": self.position[1] + self.size[1]/2}
                 else:
-                    collision = {"CEILING": self.y - self.height/2}
+                    collision = {"CEILING": self.position[1] - self.size[1]/2}
             else:
                 if dx > 0:
-                    collision = {"LEFT_WALL": self.x + self.width/2}
+                    collision = {"LEFT_WALL": self.position[0] + self.size[0]/2}
                 else:
-                    collision = {"RIGHT_WALL": self.x - self.width/2}
-
-            assert len(collision) > 0, "Math is wrong"
+                    collision = {"RIGHT_WALL": self.position[0] - self.size[0]/2}
 
         return collision
 
     @staticmethod
-    def detect_all_collisions(x_center, y_center, width, height):
-        all_collisions = {}
+    def detect_all_collisions(player):
+        # 1. Fetch all possiple collisions
+        all_collisions = {
+            'FLOOR': [],
+            'CEILING': [],
+            'LEFT_WALL': [],
+            'RIGHT_WALL': [],
+        }
         for barrier in SquareBarrier.instances:
-            single_collision = barrier.detect_collision(x_center, y_center, width, height)
+            single_collision = barrier.detect_collision(player)
             for side in single_collision:
-                # Only detect one collision per direction yet!
-                if side not in all_collisions:
-                    all_collisions[side] = single_collision[side]
-        return all_collisions
+                all_collisions[side].append(single_collision[side])
+
+        print(all_collisions)
+
+        # 2. Reduce all collisions to the relevant ones, example:
+        #    all_collisions['FLOOR'] = [3.0, 4.2, 2.2, 4.0]
+        #    -> relevant_collisions['FLOOR'] = 4.2
+        relevant_collisions = {}
+        for side in all_collisions:
+            collisions_count = len(all_collisions[side])
+            if collisions_count > 0:
+                if collisions_count > 1:
+                    all_collisions[side] = list(sorted(all_collisions[side], reverse=side in ('FLOOR', 'LEFT_WALL')))
+                relevant_collisions[side] = all_collisions[side][0]
+
+        print(relevant_collisions)
+
+        return relevant_collisions

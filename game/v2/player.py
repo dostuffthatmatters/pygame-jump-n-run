@@ -39,6 +39,7 @@ class Player:
             assert len(keymap) == 4, 'Only keys for [UP, LEFT, DOWN, RIGHT] allowed in keymap property'
 
         self.position = position
+        self.size = [width, height]
         self.velocity = [0.0, 0.0]
 
         self.keymap = keymap
@@ -51,8 +52,6 @@ class Player:
 
         self.name = name
         self.color = color
-        self.width = width
-        self.height = height
 
         self.collisions = {
             'CEILING': None,
@@ -70,12 +69,10 @@ class Player:
             f"Only key-events from {list(self.keymap.keys())} allowed"
         self.keypressed[self.keymap[event_key]] = keydown
 
-    def update_collisions(self, new_velocity, new_position):
-        all_collisions = SquareBarrier.detect_all_collisions(
-            x_center=new_position[0], y_center=new_position[1],
-            width=self.width, height=self.height
-        )
+    def update_for_collisions(self, new_velocity, new_position):
+        all_collisions = SquareBarrier.detect_all_collisions(self)
 
+        print(self.position)
         new_collisions = {
             'CEILING': None,
             'FLOOR': None,
@@ -83,67 +80,57 @@ class Player:
             'RIGHT_WALL': None
         }
 
-        if 'FLOOR' in all_collisions and new_velocity[1] < ERROR_MARGIN:
-            y_floor = all_collisions['FLOOR']
-            new_velocity[1] = 0
-            new_position[1] = y_floor + (self.height/2) - ERROR_MARGIN
-            new_collisions['FLOOR'] = y_floor
+        def fix_position(side):
+            dimension = 1 if (side in ('FLOOR', 'CEILING')) else 0
+            coordinate_direction = +1 if (side in ('FLOOR', 'LEFT_WALL')) else -1
+            new_velocity[dimension] = 0
+            limit_center_offset = ((self.size[dimension]/2) - ERROR_MARGIN) * coordinate_direction
+            new_position[dimension] = all_collisions[side] + limit_center_offset
+            new_collisions[side] = all_collisions[side]
 
-        if 'CEILING' in all_collisions and new_velocity[1] > -ERROR_MARGIN:
-            y_ceil = all_collisions['CEILING']
-            new_velocity[1] = 0
-            new_position[1] = y_ceil - (self.height/2) + ERROR_MARGIN
-            new_collisions['CEILING'] = y_ceil
+        if 'FLOOR' in all_collisions and new_velocity[1] < ERROR_MARGIN:
+            fix_position('FLOOR')
+        elif 'CEILING' in all_collisions and new_velocity[1] > -ERROR_MARGIN:
+            fix_position('CEILING')
 
         if 'LEFT_WALL' in all_collisions and new_velocity[0] < ERROR_MARGIN:
-            x_wall = all_collisions['LEFT_WALL']
-            new_velocity[0] = 0
-            new_position[0] = x_wall + (self.width/2) - ERROR_MARGIN
-            new_collisions['LEFT_WALL'] = x_wall
-
-        if 'RIGHT_WALL' in all_collisions and new_velocity[0] > -ERROR_MARGIN:
-            x_wall = all_collisions['RIGHT_WALL']
-            new_velocity[0] = 0
-            new_position[0] = x_wall - (self.width/2) + ERROR_MARGIN
-            new_collisions['RIGHT_WALL'] = x_wall
+            fix_position('LEFT_WALL')
+        elif 'RIGHT_WALL' in all_collisions and new_velocity[0] > -ERROR_MARGIN:
+            fix_position('RIGHT_WALL')
 
         self.collisions = new_collisions
-
-        new_velocity = [round(v, COORDINATE_PRECISION) for v in new_velocity]
-        new_position = [round(p, COORDINATE_PRECISION) for p in new_position]
-        return new_velocity, new_position
+        self.velocity = [round(v, COORDINATE_PRECISION) for v in new_velocity]
+        self.position = [round(p, COORDINATE_PRECISION) for p in new_position]
+        print(self.position)
+        print()
 
     def update(self, timedelta):
         new_velocity = [0, 0]
 
-        if self.collisions['RIGHT_WALL'] is None and \
-                self.keypressed['RIGHT'] and not self.keypressed['LEFT']:
-            new_velocity[0] = RUN_VELOCITY
+        if self.collisions['RIGHT_WALL'] is None:
+            if self.keypressed['RIGHT'] and not self.keypressed['LEFT']:
+                new_velocity[0] = RUN_VELOCITY
 
-        if self.collisions['LEFT_WALL'] is None and \
-                self.keypressed['LEFT'] and not self.keypressed['RIGHT']:
-            new_velocity[0] = -RUN_VELOCITY
+        if self.collisions['LEFT_WALL'] is None:
+            if self.keypressed['LEFT'] and not self.keypressed['RIGHT']:
+                new_velocity[0] = -RUN_VELOCITY
 
-        new_position = [
-            self.position[0] + new_velocity[0] * timedelta,
-            0
-        ]
-
-        if self.collisions['FLOOR'] is None:
-            new_velocity[1] = self.velocity[1] - GRAVITY * timedelta
-            if self.keypressed['DOWN']:
-                new_velocity[1] = -JUMP_VELOCITY
-            new_position[1] = self.position[1] + new_velocity[1] * timedelta
-        else:
-            # If on some floor
+        if self.collisions['FLOOR'] is not None:
             if self.keypressed['UP'] and not self.keypressed['DOWN']:
                 if self.velocity[1] < ERROR_MARGIN:
                     new_velocity[1] = new_velocity[1] = JUMP_VELOCITY
-                new_position[1] = self.position[1] + new_velocity[1] * timedelta
+        else:
+            if self.keypressed['DOWN']:
+                new_velocity[1] = -JUMP_VELOCITY  # A Mario like forced smash downwards
             else:
-                new_position[1] = self.collisions['FLOOR'] + (self.height/2) - ERROR_MARGIN
+                new_velocity[1] = self.velocity[1] - GRAVITY * timedelta
 
-        self.velocity, self.position = self.update_collisions(new_velocity, new_position)
+        new_position = [
+            self.position[0] + new_velocity[0] * timedelta,
+            self.position[1] + new_velocity[1] * timedelta
+        ]
+
+        self.update_for_collisions(new_velocity, new_position)
 
     @staticmethod
     def update_all(timedelta):
@@ -151,25 +138,26 @@ class Player:
             player.update(timedelta)
 
     def draw(self, game):
-        rect_w = self.width * SCALING_FACTOR
-        rect_h = self.height * SCALING_FACTOR
+        rect_w = self.size[0] * SCALING_FACTOR
+        rect_h = self.size[1] * SCALING_FACTOR
         rect_x = self.position[0] * SCALING_FACTOR - (rect_w/2)
         rect_y = game.height - (self.position[1] * SCALING_FACTOR + (rect_h/2))
         game.draw_rect(rect_x, rect_y, rect_w, rect_h, color=self.color)
 
         if DRAW_HELPERS:
-            circle_r = min((self.width, self.height)) * 0.1 * SCALING_FACTOR
-            sides = [
-                {"identifier": "CENTER", "dx": 0, "dy": 0},
-                {"identifier": "FLOOR", "dx": 0, "dy": -self.height/2},
-                {"identifier": "CEILING", "dx": 0, "dy": +self.height/2},
-                {"identifier": "LEFT_WALL", "dx": -self.width/2, "dy": 0},
-                {"identifier": "RIGHT_WALL", "dx": +self.width/2, "dy": 0}
-            ]
-            for side in sides:
-                if side["identifier"] == "CENTER" or self.collisions[side["identifier"]] is not None:
-                    circle_x = (self.position[0] + side["dx"]) * SCALING_FACTOR
-                    circle_y = game.height - ((self.position[1] + side["dy"]) * SCALING_FACTOR)
+            circle_r = min((self.size[0], self.size[1])) * 0.1 * SCALING_FACTOR
+            circle_offsets = {
+                "CENTER": [0, 0],
+                "FLOOR": [0, -self.size[1]/2],
+                "CEILING": [0, +self.size[1]/2],
+                "LEFT_WALL": [-self.size[0]/2, 0],
+                "RIGHT_WALL": [+self.size[0]/2, 0],
+            }
+            for side in circle_offsets:
+                # Only draw center circle and all side circles for colliding sides
+                if side == "CENTER" or self.collisions[side] is not None:
+                    circle_x = (self.position[0] + circle_offsets[side][0]) * SCALING_FACTOR
+                    circle_y = game.height - ((self.position[1] + circle_offsets[side][1]) * SCALING_FACTOR)
                     game.draw_circle(circle_x, circle_y, circle_r, color=(0, 0, 255))
 
     @staticmethod

@@ -38,26 +38,26 @@ def run():
     )
 
     player_1 = Player(
-        "Max", color=(200, 0, 50), position=(15, 3),
+        "Max", color=(200, 0, 50), position=(15, 12),
         keymap={K_w: 'UP', K_a: 'LEFT', K_s: 'DOWN', K_d: 'RIGHT'}
     )
 
     # Window boundaries
-    SquareBarrier.create(x_left=-1, y_top=21, width=52, height=1)  # top
-    SquareBarrier.create(x_left=-1, y_top=1, width=52, height=1)  # bottom
-    SquareBarrier.create(x_left=-1, y_top=21, width=1, height=22)  # left
-    SquareBarrier.create(x_left=50, y_top=21, width=1, height=22)  # right
+    SquareBarrier(x_left=-1, y_top=21, width=52, height=1)  # top
+    SquareBarrier(x_left=-1, y_top=1, width=52, height=1)  # bottom
+    SquareBarrier(x_left=-1, y_top=21, width=1, height=22)  # left
+    SquareBarrier(x_left=50, y_top=21, width=1, height=22)  # right
 
     # 3 step barriers
-    SquareBarrier.create(x_left=12, y_top=6, width=5, height=1)
-    SquareBarrier.create(x_left=19, y_top=8, width=5, height=1)
-    SquareBarrier.create(x_left=26, y_top=10, width=5, height=1)
+    SquareBarrier(x_left=12, y_top=6, width=5, height=1)  # step 1
+    SquareBarrier(x_left=19, y_top=8, width=5, height=1)  # step 2
+    SquareBarrier(x_left=26, y_top=10, width=5, height=1)  # step 3
 
     # "half pyramid" barrier
-    SquareBarrier.create(x_left=36, y_top=9, width=2, height=8)
-    SquareBarrier.create(x_left=38, y_top=7, width=2, height=6)
-    SquareBarrier.create(x_left=40, y_top=5, width=2, height=4)
-    SquareBarrier.create(x_left=42, y_top=3, width=2, height=2)
+    SquareBarrier(x_left=36, y_top=9, width=2, height=8)  # column 1
+    SquareBarrier(x_left=38, y_top=7, width=2, height=6)  # column 2
+    SquareBarrier(x_left=40, y_top=5, width=2, height=4)  # column 3
+    SquareBarrier(x_left=42, y_top=3, width=2, height=2)  # column 4
 
     while True:
         for event in pygame.event.get():
