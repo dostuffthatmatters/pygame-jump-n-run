@@ -27,7 +27,7 @@ class Player:
                 K_RIGHT: 'RIGHT'
             }
         else:
-            # Just a few tests whether the passed
+            # Just a few tests whether the passed keymap is valid
             assert \
                 all([value in ('UP', 'LEFT', 'DOWN', 'RIGHT') for value in keymap.values()]), \
                 'All keys [UP, LEFT, RIGHT] required in keymap property'
@@ -135,27 +135,22 @@ class Player:
             player.update(timedelta)
 
     def draw(self, game):
-        rect_w = self.size[0] * SCALING_FACTOR
-        rect_h = self.size[1] * SCALING_FACTOR
-        rect_x = self.position[0] * SCALING_FACTOR - (rect_w/2)
-        rect_y = game.height - (self.position[1] * SCALING_FACTOR + (rect_h/2))
-        game.draw_rect(rect_x, rect_y, rect_w, rect_h, color=self.color)
+        game.draw_rect_element(self.position, self.size, color=self.color)
 
         if DRAW_HELPERS:
-            circle_r = min((self.size[0], self.size[1])) * 0.1 * SCALING_FACTOR
+            circle_radius = min(self.size) * 0.1
             circle_offsets = {
-                "CENTER": [0, 0],
-                "FLOOR": [0, -self.size[1]/2],
-                "CEILING": [0, +self.size[1]/2],
-                "LEFT_WALL": [-self.size[0]/2, 0],
-                "RIGHT_WALL": [+self.size[0]/2, 0],
+                "FLOOR": [0, -self.size[1] / 2],
+                "CEILING": [0, +self.size[1] / 2],
+                "LEFT_WALL": [-self.size[0] / 2, 0],
+                "RIGHT_WALL": [+self.size[0] / 2, 0],
             }
+
+            game.draw_circle_element(self.position, circle_radius, color=(0, 0, 255))
             for side in circle_offsets:
-                # Only draw center circle and all side circles for colliding sides
-                if side == "CENTER" or self.collisions[side] is not None:
-                    circle_x = (self.position[0] + circle_offsets[side][0]) * SCALING_FACTOR
-                    circle_y = game.height - ((self.position[1] + circle_offsets[side][1]) * SCALING_FACTOR)
-                    game.draw_circle(circle_x, circle_y, circle_r, color=(0, 0, 255))
+                if self.collisions[side] is not None:
+                    position = [self.position[dim] + circle_offsets[side][dim] for dim in (0, 1)]
+                    game.draw_circle_element(position, circle_radius, color=(0, 0, 255))
 
     @staticmethod
     def draw_all(game):

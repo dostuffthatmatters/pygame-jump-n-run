@@ -6,7 +6,7 @@ import math
 from datetime import datetime
 
 from pygame.locals import DOUBLEBUF
-
+from game.engine.constants import *
 
 """
 The purpose of this class is just to provide a more comfortable
@@ -29,7 +29,7 @@ class Game():
             self, width=500, height=500,
             title="MyGame", font_family='Roboto',
             track_fps=True, print_fps=True,
-            max_fps=240,
+            max_fps=240
     ):
 
         self.width = width
@@ -147,3 +147,16 @@ class Game():
     def exit(self):
         pygame.quit()
         sys.exit()
+
+    def draw_rect_element(self, position, size, color=(0, 0, 0), alpha=1):
+        rect_w = size[0] * SCALING_FACTOR
+        rect_h = size[1] * SCALING_FACTOR
+        rect_x = position[0] * SCALING_FACTOR - (rect_w/2)
+        rect_y = self.height - (position[1] * SCALING_FACTOR + (rect_h/2))
+        self.draw_rect(rect_x, rect_y, rect_w, rect_h, color=color, alpha=alpha)
+
+    def draw_circle_element(self, position, radius, color=(0, 0, 0)):
+        circle_x = position[0] * SCALING_FACTOR
+        circle_y = self.height - (position[1] * SCALING_FACTOR)
+        circle_r = radius * SCALING_FACTOR
+        self.draw_circle(circle_x, circle_y, circle_r, color=(0, 0, 255))

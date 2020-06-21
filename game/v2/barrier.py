@@ -38,27 +38,15 @@ class SquareBarrier:
             (x_left + (width/2)) if x_left is not None else x_center,
             (y_top - (height/2)) if y_top is not None else y_center
         ]
-
-        self.size = [
-            width,
-            height
-        ]
-
+        self.size = [width, height]
         self.color = color
 
         SquareBarrier.instances.append(self)
 
-    def draw(self, game):
-        w = self.size[0] * SCALING_FACTOR
-        h = self.size[1] * SCALING_FACTOR
-        x = (self.position[0] * SCALING_FACTOR) - (w/2)
-        y = game.height - ((self.position[1] * SCALING_FACTOR) + (h/2))
-        game.draw_rect(x, y, w, h, color=self.color)
-
     @staticmethod
     def draw_all(game):
         for barrier in SquareBarrier.instances:
-            barrier.draw(game)
+            game.draw_rect_element(barrier.position, barrier.size, color=barrier.color)
 
     def detect_collision(self, player):
         dx_min = player.size[0]/2 + self.size[0]/2
