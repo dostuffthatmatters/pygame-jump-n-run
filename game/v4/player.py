@@ -5,6 +5,7 @@ from game.v4.enemy import Enemy
 
 from pygame.constants import *
 from game.engine.constants import *
+from game.engine.helpers import merge_into_list_dicts, reduce_to_relevant_collisions
 
 class Player:
 
@@ -85,7 +86,7 @@ class Player:
 
         new_collisions.update(Enemy.detect_all_collisions(self))
 
-        for enemy in new_collisions['ENEMY_KILLED']:
+        for enemy in new_collisions['d']:
             enemy.kill()
 
         if len(new_collisions['PLAYER_KILLED']) > 0:
@@ -172,3 +173,52 @@ class Player:
 
     def kill(self):
         self.alive = False
+
+    def detect_collision(self, player):
+        dx_min = player.size[0]/2 + self.size[0]/2
+        dy_min = player.size[1]/2 + self.size[1]/2
+
+        dx = player.position[0] - self.position[0]  # dx > 0 = other player is right from this player
+        dy = player.position[1] - self.position[1]  # dy > 0 = other player is above this player
+
+        horizontal_overlap = (dx_min - abs(dx))
+        vertical_overlap = (dy_min - abs(dy))
+
+        collision = {}
+
+        if vertical_overlap > 0 and horizontal_overlap > 0:
+
+            if vertical_overlap < (3 * horizontal_overlap):
+                if dy > 0:
+                    collision = {"FLOOR": self.position[1] + self.height/2}
+                else:
+                    collision = {"PLAYER_ON_TOP": self}
+            else:
+                if dx > 0:
+                    collision = {"LEFT_WALL": self.position[0] + self.width/2}
+                else:
+                    collision = {"RIGHT_WALL": self.position[0] - self.width/2}
+
+        return collision
+
+    def detect_all_collisions(self, x_center, y_center, width, height):
+        # 1. Fetch all possiple collisions
+        all_collisions = {
+            'FLOOR': [],
+            'PLAYER_ON_TOP': [],
+            'LEFT_WALL': [],
+            'RIGHT_WALL': [],
+        }
+
+        for player in Player.instances:
+            if player != self and player.alive:
+                all_collisions = merge_into_list_dicts(all_collisions, player.detect_collision(self))
+
+        # 2. Reduce all collisions to the relevant ones, example:
+        #    all_collisions['FLOOR'] = [3.0, 4.2, 2.2, 4.0]
+        #    -> relevant_collisions['FLOOR'] = 4.2
+        return reduce_to_relevant_collisions(
+            all_collisions,
+            fixed_collisions={'PLAYER_ON_TOP': all_collisions['PLAYER_ON_TOP']},
+            sides=('FLOOR', 'LEFT_WALL', 'RIGHT_WALL')
+        )

@@ -1,5 +1,6 @@
 
 from game.engine.constants import *
+from game.engine.helpers import merge_into_list_dicts, reduce_to_relevant_collisions
 
 def is_number(x):
     return any([isinstance(x, _type) for _type in (int, float)])
@@ -61,7 +62,6 @@ class SquareBarrier:
         collision = {}
 
         if vertical_overlap > 0 and horizontal_overlap > 0:
-
             if vertical_overlap < horizontal_overlap:
                 if dy > 0:
                     collision = {"FLOOR": self.position[1] + self.size[1]/2}
@@ -85,19 +85,9 @@ class SquareBarrier:
             'RIGHT_WALL': [],
         }
         for barrier in SquareBarrier.instances:
-            single_collision = barrier.detect_collision(player)
-            for side in single_collision:
-                all_collisions[side].append(single_collision[side])
+            all_collisions = merge_into_list_dicts(all_collisions, barrier.detect_collision(player))
 
         # 2. Reduce all collisions to the relevant ones, example:
         #    all_collisions['FLOOR'] = [3.0, 4.2, 2.2, 4.0]
         #    -> relevant_collisions['FLOOR'] = 4.2
-        relevant_collisions = {}
-        for side in all_collisions:
-            collisions_count = len(all_collisions[side])
-            if collisions_count > 0:
-                if collisions_count > 1:
-                    all_collisions[side] = list(sorted(all_collisions[side], reverse=side in ('FLOOR', 'LEFT_WALL')))
-                relevant_collisions[side] = all_collisions[side][0]
-
-        return relevant_collisions
+        return reduce_to_relevant_collisions(all_collisions)

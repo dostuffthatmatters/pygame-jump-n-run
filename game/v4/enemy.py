@@ -5,6 +5,8 @@ from game.v4.perlin import PerlinNoise1D
 
 from pygame.constants import *
 from game.engine.constants import *
+from game.engine.helpers import merge_into_list_dicts, reduce_to_relevant_collisions
+
 
 class Enemy:
 
@@ -148,7 +150,7 @@ class Enemy:
 
         if vertical_overlap > 0 and horizontal_overlap > 0:
             if vertical_overlap < horizontal_overlap and dy > 0:
-                return {"ENEMY_KILLED": self}
+                return {"ENEMIES_KILLED": self}
             else:
                 return {"PLAYER_KILLED": self}
 
@@ -157,13 +159,11 @@ class Enemy:
     @staticmethod
     def detect_all_collisions(player):
         all_collisions = {
-            'ENEMY_KILLED': [],
+            'ENEMIES_KILLED': [],
             'PLAYER_KILLED': [],
         }
         for enemy in Enemy.instances:
-            single_collision = enemy.detect_collision(player)
-            for collision_type in single_collision:
-                all_collisions[collision_type].append(single_collision[collision_type])
+            all_collisions = merge_into_list_dicts(all_collisions, enemy.detect_collision(player))
 
         return all_collisions
 
