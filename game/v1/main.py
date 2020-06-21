@@ -1,4 +1,5 @@
 import pygame
+from pygame import K_w, K_a, K_s, K_d, K_UP, K_LEFT, K_DOWN, K_RIGHT
 from game.engine.game import Game
 from game.engine.constants import *
 
@@ -22,23 +23,13 @@ def run():
         print_fps=True, max_fps=60
     )
 
-    # player_1 listens to WAD
     player_1 = Player(
         "Max", color=(200, 0, 50), position=(15, 3),
-        keymap={
-            'UP': pygame.K_w,
-            'LEFT': pygame.K_a,
-            'RIGHT': pygame.K_d
-        }
+        keymap={K_w: 'UP', K_a: 'LEFT', K_d: 'RIGHT'}
     )
-    # player_1 listens to ULR
     player_2 = Player(
         "Moritz", color=(50, 0, 200), position=(35, 3),
-        keymap={
-            'UP': pygame.K_UP,
-            'LEFT': pygame.K_LEFT,
-            'RIGHT': pygame.K_RIGHT
-        }
+        keymap={K_UP: 'UP', K_LEFT: 'LEFT', K_RIGHT: 'RIGHT'}
     )
 
     while True:

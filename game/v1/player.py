@@ -1,5 +1,6 @@
 
 import pygame
+from pygame import K_UP, K_DOWN, K_LEFT, K_RIGHT
 from engine.constants import *
 
 class Player:
@@ -18,21 +19,21 @@ class Player:
     ):
         if keymap is None:
             keymap = {
-                'UP': pygame.K_UP,
-                'LEFT': pygame.K_LEFT,
-                'RIGHT': pygame.K_RIGHT
+                pygame.K_UP: 'UP',
+                pygame.K_LEFT: 'LEFT',
+                pygame.K_RIGHT: 'RIGHT'
             }
         else:
             # Just a few tests whether the passed
             assert \
-                all([key in keymap for key in ('UP', 'LEFT', 'RIGHT')]), \
+                all([value in ('UP', 'LEFT', 'RIGHT') for value in keymap.values()]), \
                 'All keys [UP, LEFT, RIGHT] required in keymap property'
 
             assert \
-                all([isinstance(keymap[key], int) for key in ('UP', 'LEFT', 'RIGHT')]), \
-                'All keys [UP, LEFT, RIGHT] in keymap property have to be integers (e.g. pygame.K_UP)'
+                all([isinstance(key, int) for key in keymap.keys()]), \
+                'All keys for [UP, LEFT, RIGHT] in keymap property have to be integers (e.g. pygame.K_UP)'
 
-            assert len(keymap) == 3, 'Only keys [UP, LEFT, RIGHT] allowed in keymap property'
+            assert len(keymap) == 3, 'Only keys for [UP, LEFT, RIGHT] allowed in keymap property'
 
         self.position = position
         self.velocity = [0.0, 0.0]
@@ -44,11 +45,6 @@ class Player:
             'RIGHT': False,
         }
 
-        reversed_keymap = {}
-        for key in keymap:
-            reversed_keymap[keymap[key]] = key
-        self.reversed_keymap = reversed_keymap
-
         self.name = name
         self.color = color
         self.width = width
@@ -59,9 +55,9 @@ class Player:
 
     def keypress(self, event_key, keydown):
         assert \
-            event_key in self.keymap.values(),\
-            f"Only key-events from {list(self.keymap.values())} allowed"
-        self.keypressed[self.reversed_keymap[event_key]] = keydown
+            event_key in self.keymap.keys(),\
+            f"Only key-events from {list(self.keymap.keys())} allowed"
+        self.keypressed[self.keymap[event_key]] = keydown
 
     def update(self, timedelta, game=None):
         new_velocity = [
