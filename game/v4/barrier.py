@@ -1,6 +1,6 @@
 
 from game.engine.constants import *
-from game.engine.helpers import merge_into_list_dicts, reduce_to_relevant_collisions
+from game.engine.helpers import merge_into_list_dict, reduce_to_relevant_collisions, get_collision
 
 def is_number(x):
     return any([isinstance(x, _type) for _type in (int, float)])
@@ -49,32 +49,6 @@ class SquareBarrier:
         for barrier in SquareBarrier.instances:
             game.draw_rect_element(barrier.position, barrier.size, color=barrier.color)
 
-    def detect_collision(self, player):
-        dx_min = player.size[0]/2 + self.size[0]/2
-        dy_min = player.size[1]/2 + self.size[1]/2
-
-        dx = player.position[0] - self.position[0]  # dx > 0 = player is right from the barrier
-        dy = player.position[1] - self.position[1]  # dy > 0 = player is above the barrier
-
-        horizontal_overlap = (dx_min - abs(dx))
-        vertical_overlap = (dy_min - abs(dy))
-
-        collision = {}
-
-        if vertical_overlap > 0 and horizontal_overlap > 0:
-            if vertical_overlap < horizontal_overlap:
-                if dy > 0:
-                    collision = {"FLOOR": self.position[1] + self.size[1]/2}
-                else:
-                    collision = {"CEILING": self.position[1] - self.size[1]/2}
-            else:
-                if dx > 0:
-                    collision = {"LEFT_WALL": self.position[0] + self.size[0]/2}
-                else:
-                    collision = {"RIGHT_WALL": self.position[0] - self.size[0]/2}
-
-        return collision
-
     @staticmethod
     def detect_all_collisions(player):
         # 1. Fetch all possiple collisions
@@ -85,7 +59,10 @@ class SquareBarrier:
             'RIGHT_WALL': [],
         }
         for barrier in SquareBarrier.instances:
-            all_collisions = merge_into_list_dicts(all_collisions, barrier.detect_collision(player))
+            all_collisions = merge_into_list_dict(
+                all_collisions,
+                get_collision(barrier=barrier, moving_object=player)
+            )
 
         # 2. Reduce all collisions to the relevant ones, example:
         #    all_collisions['FLOOR'] = [3.0, 4.2, 2.2, 4.0]

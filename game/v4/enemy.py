@@ -3,7 +3,7 @@ from game.v4.barrier import SquareBarrier
 from perlin import PerlinNoise1D
 
 from game.engine.constants import *
-from game.engine.helpers import merge_into_list_dicts
+from game.engine.helpers import merge_into_list_dict, get_collision
 
 
 class Enemy:
@@ -123,32 +123,18 @@ class Enemy:
         for enemy in Enemy.instances:
             enemy.draw(game)
 
-    def detect_collision(self, player):
-        dx_min = player.size[0]/2 + self.size[0]/2
-        dy_min = player.size[1]/2 + self.size[1]/2
-
-        dx = player.position[0] - self.position[0]  # dx > 0 = player is right from the enemy
-        dy = player.position[1] - self.position[1]  # dy > 0 = player is above the enemy
-
-        horizontal_overlap = (dx_min - abs(dx))
-        vertical_overlap = (dy_min - abs(dy))
-
-        if vertical_overlap > 0 and horizontal_overlap > 0:
-            if vertical_overlap < horizontal_overlap and dy > 0:
-                return {"ENEMIES_KILLED": self}
-            else:
-                return {"PLAYER_KILLED": self}
-
-        return {}
-
     @staticmethod
     def detect_all_collisions(player):
         all_collisions = {
-            'ENEMIES_KILLED': [],
-            'PLAYER_KILLED': [],
+            'BARRIER_KILLED': [],
+            'MOVING_OBJECT_KILLED': [],
         }
         for enemy in Enemy.instances:
-            all_collisions = merge_into_list_dicts(all_collisions, enemy.detect_collision(player))
+            all_collisions = merge_into_list_dict(
+                all_collisions, get_collisions(
+                    barrier=enemy, moving_object=player, combat_collision=True
+                )
+            )
 
         return all_collisions
 

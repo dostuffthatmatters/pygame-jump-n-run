@@ -30,12 +30,12 @@ SLOWDOWN = False
 SLOWDOWN_FPS = 4
 DRAW_HELPERS = True
 
-ERROR_MARGIN = 0.025
+ERROR_MARGIN = 0.0125
 MIN_DRAW_FPS = 30
 MAX_DRAW_FPS = 60
 
 COORDINATE_PRECISION = 4  # Decimals places of coordinates being stored
-SIMULATION_FRAMES_PER_DRAW = 10
+SIMULATION_FRAMES_PER_DRAW = 4
 
 # Careful: The more frames per seconds are being simulated the smaller
 #          the changes in position and velocity will be therefore the
