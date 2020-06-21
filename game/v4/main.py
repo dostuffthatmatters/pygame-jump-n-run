@@ -47,8 +47,14 @@ def run():
         keymap={K_w: 'UP', K_a: 'LEFT', K_s: 'DOWN', K_d: 'RIGHT'}
     )
 
+    player_2 = Player(
+        "Moritz", color=(50, 0, 200), position=(10, 12),
+        keymap={K_UP: 'UP', K_LEFT: 'LEFT', K_DOWN: 'DOWN', K_RIGHT: 'RIGHT'}
+    )
+
     for x in range(2, 32, 4):
-        Enemy(position=(x, 14))
+        # Enemy(position=(x, 14))
+        pass
 
     # Window boundaries
     SquareBarrier(x_left=-1, y_top=21, width=52, height=1)  # top
@@ -73,8 +79,10 @@ def run():
                 game.exit()
 
             if event.type in (pygame.KEYDOWN, pygame.KEYUP):
-                if event.key in (pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d):
+                if event.key in (pygame.K_w, pygame.K_a, pygame.K_s, pygame.K_d):
                     player_1.keypress(event.key, event.type == pygame.KEYDOWN)
+                if event.key in (pygame.K_UP, pygame.K_LEFT, pygame.K_DOWN, pygame.K_RIGHT):
+                    player_2.keypress(event.key, event.type == pygame.KEYDOWN)
 
         if not SLOWDOWN:
             # Collision detection is not fully working with low fps, yet...

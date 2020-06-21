@@ -159,4 +159,20 @@ class Game():
         circle_x = position[0] * SCALING_FACTOR
         circle_y = self.height - (position[1] * SCALING_FACTOR)
         circle_r = radius * SCALING_FACTOR
-        self.draw_circle(circle_x, circle_y, circle_r, color=(0, 0, 255))
+        self.draw_circle(circle_x, circle_y, circle_r, color=color)
+
+    def draw_helper_points(self, game_object):
+        reversed_color = [(255 - c) for c in game_object.color]
+        circle_radius = min(game_object.size) * 0.15
+        circle_offsets = {
+            "FLOOR": [0, -0.5 * game_object.size[1]],
+            "CEILING": [0, 0.5 * game_object.size[1]],
+            "LEFT_WALL": [-0.5 * game_object.size[0], 0],
+            "RIGHT_WALL": [0.5 * game_object.size[0], 0],
+        }
+
+        self.draw_circle_element(game_object.position, circle_radius, color=reversed_color)
+        for side in circle_offsets:
+            if game_object.collisions[side] is not None:
+                position = [game_object.position[dim] + circle_offsets[side][dim] for dim in (0, 1)]
+                self.draw_circle_element(position, circle_radius, color=reversed_color)

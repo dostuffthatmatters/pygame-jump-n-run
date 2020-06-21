@@ -86,7 +86,7 @@ class Player:
 
         new_collisions.update(Enemy.detect_all_collisions(self))
 
-        for enemy in new_collisions['d']:
+        for enemy in new_collisions['ENEMIES_KILLED']:
             enemy.kill()
 
         if len(new_collisions['PLAYER_KILLED']) > 0:
@@ -120,7 +120,6 @@ class Player:
         if self.collisions['RIGHT_WALL'] is None:
             if self.keypressed['RIGHT'] and not self.keypressed['LEFT']:
                 new_velocity[0] = RUN_VELOCITY
-
         if self.collisions['LEFT_WALL'] is None:
             if self.keypressed['LEFT'] and not self.keypressed['RIGHT']:
                 new_velocity[0] = -RUN_VELOCITY
@@ -150,21 +149,8 @@ class Player:
 
     def draw(self, game):
         game.draw_rect_element(self.position, self.size, color=self.color, alpha=1.0 if self.alive else 0.3)
-
         if DRAW_HELPERS and self.alive:
-            circle_radius = min(self.size) * 0.1
-            circle_offsets = {
-                "FLOOR": [0, -0.5*self.size[1]],
-                "CEILING": [0, 0.5*self.size[1]],
-                "LEFT_WALL": [-0.5*self.size[0], 0],
-                "RIGHT_WALL": [0.5*self.size[0], 0],
-            }
-
-            game.draw_circle_element(self.position, circle_radius, color=(0, 0, 255))
-            for side in circle_offsets:
-                if self.collisions[side] is not None:
-                    position = [self.position[dim] + circle_offsets[side][dim] for dim in (0, 1)]
-                    game.draw_circle_element(position, circle_radius, color=(0, 0, 255))
+            game.draw_helper_points(self)
 
     @staticmethod
     def draw_all(game):
