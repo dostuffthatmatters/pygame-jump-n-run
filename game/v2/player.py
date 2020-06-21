@@ -72,7 +72,6 @@ class Player:
     def update_for_collisions(self, new_velocity, new_position):
         all_collisions = SquareBarrier.detect_all_collisions(self)
 
-        print(self.position)
         new_collisions = {
             'CEILING': None,
             'FLOOR': None,
@@ -101,8 +100,6 @@ class Player:
         self.collisions = new_collisions
         self.velocity = [round(v, COORDINATE_PRECISION) for v in new_velocity]
         self.position = [round(p, COORDINATE_PRECISION) for p in new_position]
-        print(self.position)
-        print()
 
     def update(self, timedelta):
         new_velocity = [0, 0]

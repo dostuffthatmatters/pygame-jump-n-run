@@ -23,7 +23,9 @@ def draw(game, player):
     if DRAW_HELPERS:
         game.draw_text(text=f"collisions: {player.collisions}", x_left=5, y_top=5, font_size=20, color=player.color)
         game.draw_text(text=f"position: {player.position}", x_left=5, y_top=30, font_size=20, color=player.color)
-        game.draw_text(text=f"{game.fps} FPS", x_left=5, y_top=55, font_size=20)
+        game.draw_text(text=f"velocity: {player.velocity}", x_left=5, y_top=55, font_size=20, color=player.color)
+        game.draw_text(text=f"{game.fps * SIMULATION_FRAMES_PER_DRAW} FPS (simulation) "
+                            f"{game.fps} FPS (canvas)", x_left=5, y_top=80, font_size=20)
     else:
         game.draw_text(text=f"{game.fps} FPS", x_left=5, y_top=5, font_size=20)
 
@@ -34,7 +36,7 @@ def run():
     game = Game(
         width=50 * SCALING_FACTOR,
         height=20 * SCALING_FACTOR,
-        print_fps=False, max_fps=MAX_FPS
+        print_fps=False, max_fps=MAX_DRAW_FPS
     )
 
     player_1 = Player(
@@ -70,12 +72,12 @@ def run():
 
         if not SLOWDOWN:
             # Collision detection is not fully working with low fps, yet...
-            fps = max(game.fps, MIN_FPS)
+            fps = max(game.fps, MIN_DRAW_FPS)
 
-            # Simulation is physically slower in game.fps < MIN_FPS
-            update(1/fps)
+            for i in range(SIMULATION_FRAMES_PER_DRAW):
+                update(1/(fps * SIMULATION_FRAMES_PER_DRAW))
         else:
-            time.sleep((1 / SLOWDOWN_FPS) - (1 / 45))
+            time.sleep((1/SLOWDOWN_FPS) - (1 / 45))
             update(1/45)
 
         draw(game, player_1)

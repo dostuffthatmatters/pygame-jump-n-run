@@ -101,8 +101,6 @@ class SquareBarrier:
             for side in single_collision:
                 all_collisions[side].append(single_collision[side])
 
-        print(all_collisions)
-
         # 2. Reduce all collisions to the relevant ones, example:
         #    all_collisions['FLOOR'] = [3.0, 4.2, 2.2, 4.0]
         #    -> relevant_collisions['FLOOR'] = 4.2
@@ -113,7 +111,5 @@ class SquareBarrier:
                 if collisions_count > 1:
                     all_collisions[side] = list(sorted(all_collisions[side], reverse=side in ('FLOOR', 'LEFT_WALL')))
                 relevant_collisions[side] = all_collisions[side][0]
-
-        print(relevant_collisions)
 
         return relevant_collisions

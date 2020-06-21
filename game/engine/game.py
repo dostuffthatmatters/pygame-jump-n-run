@@ -120,19 +120,17 @@ class Game():
         self.window.fill(color)
 
     def update(self, rects=None):
-        # Updates and prints fps every 30 frames -> Better than
-        # using time because less datetime.now() evaluations
         if self.track_fps:
-            timedelta = self.clock.tick(self.max_fps) * 0.001
-            current_fps = round(1/timedelta)
+            max_fps = self.max_fps
 
-            new_fps = round((self.fps*(self.max_fps/4) + current_fps)/((self.max_fps/4)+1))
+            timedelta = self.clock.tick(max_fps) * 0.001
+            # self.fps converges towards the actual fps -> reduces noise in fps
+            new_fps = round((self.fps*5 + (1/timedelta))/6)
 
-            modified = self.fps != new_fps
+            if self.print_fps and self.fps != new_fps:
+                print("{:3d} FPS".format(round(new_fps)))
+
             self.fps = new_fps
-
-            if self.print_fps and modified:
-                print("{:3d} FPS".format(round(self.fps)))
 
         if rects is None:
             pygame.display.update()
