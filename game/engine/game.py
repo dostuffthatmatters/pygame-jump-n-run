@@ -2,7 +2,11 @@
 import pygame
 from pygame import gfxdraw
 import sys
+import math
 from datetime import datetime
+
+from pygame.locals import DOUBLEBUF
+
 
 """
 The purpose of this class is just to provide a more comfortable
@@ -24,29 +28,48 @@ class Game():
     def __init__(
             self, width=500, height=500,
             title="MyGame", font_family='Roboto',
-            print_fps=False
+            track_fps=True, print_fps=True,
+            max_fps=240,
     ):
 
         self.width = width
         self.height = height
         self.font_family = font_family
 
-        self.fps = 1
-        self.last_frame_time = datetime.now()
+        if track_fps:
+            self.clock = pygame.time.Clock()
+            self.max_fps = max_fps
+            self.fps = max_fps
+        else:
+            assert not print_fps, "Cannot print_fps without track_fps"
+
+        self.track_fps = track_fps
         self.print_fps = print_fps
-        self.print_fps_count = 1
 
         pygame.init()
-        self.window = pygame.display.set_mode((width, height))
+        self.window = pygame.display.set_mode((width, height), DOUBLEBUF)
         pygame.display.set_caption(title)
 
         # Has to be called to use fonts at some point
         pygame.font.init()
 
-    def draw_rect(self, x, y, width, height, color=(0, 0, 0)):
-        gfxdraw.box(self.window, (x, y, width, height), color)
+    def draw_rect(self, x, y, width, height, color=(0, 0, 0), alpha=1):
+        if x < 0:
+            width += x
+            x = 0
+            if width <= 0:
+                return
+
+        if y < 0:
+            height += y
+            y = 0
+            if height <= 0:
+                return
+
+        gfxdraw.box(self.window, (x, y, width, height), list(color) + [int(alpha * 255)])
 
     def draw_circle(self, x, y, radius, color=(0, 0, 0)):
+        x, y, radius = math.ceil(x), math.ceil(y), math.ceil(radius)
         gfxdraw.aacircle(self.window, x, y, radius, color)
         gfxdraw.filled_circle(self.window, x, y, radius, color)
 
@@ -86,7 +109,7 @@ class Game():
         if y_top is None and y_center is None:
             # If nothing has been set, use window center
             y = round((self.height - rh)/2)
-        elif x_center is not None:
+        elif y_center is not None:
             y = round((y_center) - (rh/2))
         else:
             y = round(y_top)
@@ -96,25 +119,25 @@ class Game():
     def draw_background(self, color=(255, 255, 255)):
         self.window.fill(color)
 
-    def update(self):
-        now = datetime.now()
-        timedelta = datetime.now() - self.last_frame_time
-        seconds = timedelta.seconds + 0.000001 * timedelta.microseconds
+    def update(self, rects=None):
+        # Updates and prints fps every 30 frames -> Better than
+        # using time because less datetime.now() evaluations
+        if self.track_fps:
+            timedelta = self.clock.tick(self.max_fps) * 0.001
+            current_fps = round(1/timedelta)
 
-        self.last_frame_time = now
-        self.fps = 1/seconds
+            new_fps = round((self.fps*(self.max_fps/4) + current_fps)/((self.max_fps/4)+1))
 
-        if self.print_fps:
-            # roughly 1 print per second
-            self.print_fps_count = (self.print_fps_count + 1) % self.fps
+            modified = self.fps != new_fps
+            self.fps = new_fps
 
-            if self.print_fps_count > self.fps:
-                print(f"{'00' if self.fps < 10 else '0' if self.fps < 100 else ''}{self.fps}FPS")
-                self.print_fps_count -= self.fps
-            else:
-                self.print_fps_count += 1
+            if self.print_fps and modified:
+                print("{:3d} FPS".format(round(self.fps)))
 
-        pygame.display.update()
+        if rects is None:
+            pygame.display.update()
+        else:
+            pygame.display.update(rects)
 
     def get_mouse_position(self):
         if pygame.mouse.get_focused() == 0:

@@ -2,7 +2,6 @@
 
 .idea
 
-
 # Created by https://www.toptal.com/developers/gitignore/api/python,pycharm,intellij,macos,linux,windows
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,pycharm,intellij,macos,linux,windows
 
@@ -224,7 +223,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/

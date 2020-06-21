@@ -1,6 +1,6 @@
 
 import pygame
-from constants import *
+from engine.constants import *
 
 class Player:
 

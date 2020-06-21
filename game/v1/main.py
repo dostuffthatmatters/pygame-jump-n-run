@@ -1,11 +1,8 @@
 import pygame
-import time
-from datetime import datetime
-import math
+from game.engine.game import Game
+from game.engine.constants import *
 
-from game.v1.game import Game
 from game.v1.player import Player
-from game.v1.constants import *
 
 
 def update(timedelta, game):
@@ -19,7 +16,11 @@ def draw(game):
 
 
 def run():
-    game = Game(width=50 * SCALING_FACTOR, height=20 * SCALING_FACTOR, print_fps=True)
+    game = Game(
+        width=50 * SCALING_FACTOR,
+        height=20 * SCALING_FACTOR,
+        print_fps=True, max_fps=60
+    )
 
     # player_1 listens to WAD
     player_1 = Player(
