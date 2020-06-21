@@ -1,1 +1,3 @@
-# pygame-jump-n-run
+# A Simple Jump and Run Game with Pygame
+
+
