@@ -2,7 +2,7 @@
 import math
 
 SCALING_FACTOR = 20  # pixels/meter
-GRAVITY = 9.81 * 8  # m/s^2
+GRAVITY = 9.81 * 9  # m/s^2
 
 RUN_VELOCITY = 10  # m/s
 JUMP_HEIGHT = 6  # meter
@@ -18,5 +18,15 @@ about 2.2 seconds (up and down). However with the real gravity
 this feels way too slow (I mean real people cannot jump 6 
 meters high ;))
 
-So that is why I artificially bumped up the gravity.
+So that is why I artificially bumped up the gravity:
+x times the gravity -> 1/sqrt(x) times the jump-duration
 """
+
+# For debugging purposes
+SLOWDOWN = False
+SLOWDOWN_FPS = 4
+DRAW_HELPERS = True
+
+ERROR_MARGIN = 0.025
+MIN_FPS = 30
+MAX_FPS = 60

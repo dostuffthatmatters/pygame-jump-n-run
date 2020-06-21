@@ -1,6 +1,8 @@
+
 import pygame
-from pygame.constants import *
 from game.engine.game import Game
+
+from pygame.constants import *
 from game.engine.constants import *
 
 from game.v1.player import Player

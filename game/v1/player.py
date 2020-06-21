@@ -1,7 +1,8 @@
 
 import pygame
+
 from pygame.constants import *
-from engine.constants import *
+from game.engine.constants import *
 
 class Player:
 
