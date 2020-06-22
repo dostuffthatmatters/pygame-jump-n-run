@@ -55,7 +55,7 @@ def draw(game, player_1, player_2, sorted_scores):
     game.draw_text(text=f"{game.fps * SIMULATION_FRAMES_PER_DRAW} FPS (simulation) "
                         f"{game.fps} FPS (canvas)", x_left=5, y_top=55, font_size=20)
 
-    # Update game window (and fps)
+    # 4. Update game window (and fps)
     game.update()
 
 

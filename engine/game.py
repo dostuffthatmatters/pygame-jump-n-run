@@ -149,19 +149,20 @@ class Game():
     # Draw small helper circles indicating the center of a game element as
     # well as possible collisions
     def draw_helper_points(self, game_object):
-        TEST_object_attributes(game_object, attributes=("position", "size", "color", "collisions"))
+        TEST_object_attributes(game_object, attributes=("position", "size", "color"))
 
         reversed_color = reverse_color(game_object.color)
         circle_radius = min(game_object.size) * 0.15
-        circle_offsets = {
-            "FLOOR": [0, -0.5 * game_object.size[1]],
-            "CEILING": [0, 0.5 * game_object.size[1]],
-            "LEFT_WALL": [-0.5 * game_object.size[0], 0],
-            "RIGHT_WALL": [0.5 * game_object.size[0], 0],
-        }
-
         self.draw_circle_element(game_object.position, circle_radius, color=reversed_color)
-        for side in circle_offsets:
-            if game_object.collisions[side] is not None:
-                position = [game_object.position[dim] + circle_offsets[side][dim] for dim in (0, 1)]
-                self.draw_circle_element(position, circle_radius, color=reversed_color)
+
+        if hasattr(game_object, "collisions"):
+            circle_offsets = {
+                "FLOOR": [0, -0.5 * game_object.size[1]],
+                "CEILING": [0, 0.5 * game_object.size[1]],
+                "LEFT_WALL": [-0.5 * game_object.size[0], 0],
+                "RIGHT_WALL": [0.5 * game_object.size[0], 0],
+            }
+            for side in circle_offsets:
+                if game_object.collisions[side] is not None:
+                    position = [game_object.position[dim] + circle_offsets[side][dim] for dim in (0, 1)]
+                    self.draw_circle_element(position, circle_radius, color=reversed_color)

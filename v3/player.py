@@ -38,8 +38,7 @@ class Player:
 
         # All properties as lists with length 2
         # => [x-component, y-component]
-        self.starting_position = [p for p in position]
-        self.position = [p for p in position]
+        self.position = list(position)
         self.size = [width, height]
         self.velocity = [0.0, 0.0]
 
@@ -139,10 +138,10 @@ class Player:
     # Update a single Player instances
     def update(self, timedelta):
 
-        # Preliminary new velocity
+        # 1. Preliminary new velocity
         new_velocity = [0.0, 0.0]
 
-        # Set current horizontal velocity according to
+        # 2. Set current horizontal velocity according to
         # self.collisions and self.keypressed
         if self.collisions['RIGHT_WALL'] is None:
             if self.keypressed['RIGHT'] and not self.keypressed['LEFT']:
@@ -151,7 +150,7 @@ class Player:
             if self.keypressed['LEFT'] and not self.keypressed['RIGHT']:
                 new_velocity[0] = -RUN_VELOCITY
 
-        # Set current vertical velocity according to
+        # 3. Set current vertical velocity according to
         # self.collisions and self.keypressed
         if self.collisions['FLOOR'] is not None:
             if self.keypressed['UP'] and not self.keypressed['DOWN']:
@@ -165,13 +164,13 @@ class Player:
                 # Regular gravitational acceleration
                 new_velocity[1] = self.velocity[1] - GRAVITY * timedelta
 
-        # Preliminary new position
+        # 4. Preliminary new position
         new_position = [
             self.position[0] + new_velocity[0] * timedelta,
             self.position[1] + new_velocity[1] * timedelta
         ]
 
-        # Adjust new_velocity and new_position by detecting collisions
+        # 5. Adjust new_velocity and new_position by detecting collisions
         # for the new state and modifying the new state to comply with
         # the collisions with other enemies, players and barriers
         self.update_for_collisions(new_velocity, new_position, timedelta)
