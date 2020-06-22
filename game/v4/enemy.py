@@ -68,14 +68,14 @@ class Enemy:
             new_position[dimension] = all_collisions[side] + limit_center_offset
             new_collisions[side] = all_collisions[side]
 
-        if 'FLOOR' in all_collisions and new_velocity[1] < ERROR_MARGIN:
+        if all_collisions['FLOOR'] is not None and new_velocity[1] < ERROR_MARGIN:
             fix_position('FLOOR')
-        elif 'CEILING' in all_collisions and new_velocity[1] > -ERROR_MARGIN:
+        elif all_collisions['CEILING'] is not None and new_velocity[1] > -ERROR_MARGIN:
             fix_position('CEILING')
 
-        if 'LEFT_WALL' in all_collisions and new_velocity[0] < ERROR_MARGIN:
+        if all_collisions['LEFT_WALL'] is not None and new_velocity[0] < ERROR_MARGIN:
             fix_position('LEFT_WALL')
-        elif 'RIGHT_WALL' in all_collisions and new_velocity[0] > -ERROR_MARGIN:
+        elif all_collisions['RIGHT_WALL'] is not None and new_velocity[0] > -ERROR_MARGIN:
             fix_position('RIGHT_WALL')
 
         self.collisions = new_collisions
@@ -131,7 +131,7 @@ class Enemy:
         }
         for enemy in Enemy.instances:
             all_collisions = merge_into_list_dict(
-                all_collisions, get_collisions(
+                all_collisions, get_collision(
                     barrier=enemy, moving_object=player, combat_collision=True
                 )
             )

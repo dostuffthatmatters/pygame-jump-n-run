@@ -59,7 +59,7 @@ def reduce_to_relevant_collisions(
 
 def get_collision(barrier, moving_object, combat_collision=False, stacked_collision=False):
 
-    assert not(combat_collision and player_collision), "Only one type of collision possible"
+    assert not(combat_collision and stacked_collision), "Only one type of collision possible"
     dx_min = moving_object.size[0]/2 + barrier.size[0]/2
     dy_min = moving_object.size[1]/2 + barrier.size[1]/2
 

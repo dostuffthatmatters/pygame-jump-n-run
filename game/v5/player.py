@@ -41,8 +41,8 @@ class Player:
 
             assert len(keymap) == 4, 'Only keys for [UP, LEFT, DOWN, RIGHT] allowed in keymap property'
 
-        self.starting_position = list(position)
-        self.position = list(deepcopy(position))
+        self.starting_position = [p for p in position]
+        self.position = [p for p in position]
         self.size = [width, height]
         self.velocity = [0.0, 0.0]
 
@@ -87,6 +87,7 @@ class Player:
             self.enemies_killed += 1
         if len(combat_collisions['MOVING_OBJECT_KILLED']) > 0:
             self.kill()
+            return
 
         # Collisions should refer to new velocity and position
         self.velocity, self.position = new_velocity, new_position
@@ -172,7 +173,7 @@ class Player:
     @staticmethod
     def update_all(timedelta):
         for player in Player.instances:
-            if player.lifes_left > 0:
+            if player.lifes_left > 0 and not player.won:
                 player.update(timedelta)
 
     def draw(self, game):
@@ -199,7 +200,8 @@ class Player:
             'RIGHT_WALL': None,
             'OBJECTS_ON_TOP': []
         }
-        self.velocity, self.position = [0, 0], deepcopy(self.starting_position)
+        self.velocity = [0, 0]
+        self.position = [p for p in self.starting_position]
 
     @staticmethod
     def detect_all_collisions(moving_player):
