@@ -115,7 +115,7 @@ class Enemy:
     # Update a single Enemy instance
     def update(self, timedelta):
         # Get the current velocity with perlin noise
-        self.noise_index = (self.noise_index + timedelta) % 128
+        self.noise_index = (self.noise_index + timedelta*3) % 127
         noise_value = self.noise_sign * self.noise[self.noise_index]
 
         # Preliminary new velocity
