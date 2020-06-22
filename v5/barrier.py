@@ -1,10 +1,12 @@
 
 # Engine
 from engine.helpers import is_number, merge_into_list_dict, reduce_to_relevant_collisions, get_collision
+from engine.tests import TEST_mandatory_coordinates
 
 
 class SquareBarrier:
 
+    # A list of all SquareBarrier instances
     instances = []
 
     def __init__(
@@ -15,23 +17,11 @@ class SquareBarrier:
             color=(150, 150, 150)
     ):
 
-        # Just some tests to validate that the correct init_values are given
-        assert \
-            x_left is None and x_center is not None or \
-            x_center is None and x_left is not None, \
-            "Exactly one of (x_left, x_center) has to be set"
-        assert \
-            is_number(x_left if x_left is not None else x_center),\
-            "x has to be a number (integer or float)"
-        assert \
-            y_top is None and y_center is not None or \
-            y_center is None and y_top is not None, \
-            "Exactly one of (y_top, y_center) has to be set"
-        assert \
-            is_number(y_top if y_top is not None else y_center), \
-            "y has to be a number (integer or float)"
+        TEST_mandatory_coordinates(x_left=x_left, x_center=x_center, y_top=y_top, y_center=y_center)
 
         # self.position is referring to the blocks center
+        # All properties as lists with length 2
+        # => [x-component, y-component]
         self.position = [
             (x_left + (width/2)) if x_left is not None else x_center,
             (y_top - (height/2)) if y_top is not None else y_center
@@ -39,11 +29,14 @@ class SquareBarrier:
         self.size = [width, height]
         self.color = color
 
+        # Add this new instances to the instance-list from above
         SquareBarrier.instances.append(self)
 
+    # Draw all SquareBarrier instances
     @staticmethod
     def draw_all(game):
         for barrier in SquareBarrier.instances:
+            # Uses the scaled draw rect method from engine.game
             game.draw_rect_element(barrier.position, barrier.size, color=barrier.color)
 
     @staticmethod
