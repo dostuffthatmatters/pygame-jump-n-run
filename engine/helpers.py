@@ -1,16 +1,30 @@
 
+# Engine
+from engine.tests import TEST_color
+
+# Constants
 from engine.constants import *
+
+
+"""
+I here you can find basic helper functionality that will be used in many
+different contexts.
+
+Basic example: is_number(x) -> returns True if x is an int or a float
+"""
 
 
 def is_number(x):
     return any([isinstance(x, _type) for _type in (int, float)])
 
+def reverse_color(color):
+    TEST_color(color)
+    return [(255 - c) for c in color]
 
+# This function merges two dicts of the schema: {key: [value1, ...], ...} or
+# {key: value3, ...} into {key: [value1, ..., value3, ...], ...}
+# so that the list is being appended upon instead of replaced
 def merge_into_list_dict(*args):
-    # This function merges two dicts of the schema: {key: [value1, ...], ...} or
-    # {key: value3, ...} into {key: [value1, ..., value3, ...], ...}
-    # so that the list is being appended upon instead of replaced
-
     assert len(args) >= 2, "Expected at least 2 dicts to be merged"
 
     existing_dict, new_dict = args[0], args[1]
@@ -39,6 +53,10 @@ def merge_into_list_dict(*args):
 
     return existing_dict
 
+# This functions reduces all collisions to the relevant ones, example:
+#    all_collisions['FLOOR'] = [3.0, 4.2, 2.2, 4.0]
+#    -> relevant_collisions['FLOOR'] = 4.2 (highest value, therefore the
+#    only floor we will have to look out for)
 def reduce_to_relevant_collisions(
         all_collisions,
         sides=('FLOOR', 'CEILING', 'LEFT_WALL', 'RIGHT_WALL'),
@@ -62,6 +80,16 @@ def reduce_to_relevant_collisions(
     return reduced_collisions
 
 
+# This function returns a collision dict that includes all types of
+# collisions between a barrier and a moving object. The barrier can
+# be a barrier, an enemy or another player, however in this context
+# barrier will be seen as not moving and therefore serves as a FLOOR,
+# WALL, CEILING, etc.
+#
+# In order to implement Player-vs-Enemy functionality there are
+# different types of collision checks set by combat_collision and
+# stacked_collision. Depending on the type, different collision
+# occurances will be returned
 def get_collision(barrier, moving_object, combat_collision=False, stacked_collision=False):
 
     assert not(combat_collision and stacked_collision), "Only one type of collision possible"

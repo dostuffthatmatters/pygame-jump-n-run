@@ -1,10 +1,17 @@
 
+# Libraries
 import pygame
 from pygame import gfxdraw
 import sys
 
+# Engine
+from engine.tests import TEST_optional_coordinates, TEST_color, TEST_object_attributes
+from engine.helpers import reverse_color
+
+# Constants
 from pygame.locals import DOUBLEBUF
 from engine.constants import *
+
 
 """
 The purpose of this class is just to provide a more comfortable
@@ -39,7 +46,7 @@ class Game():
             self.max_fps = max_fps
             self.fps = max_fps
         else:
-            assert not print_fps, "Cannot print_fps without track_fps"
+            assert not print_fps, "Cannot print_fps without track_fps=True"
 
         self.track_fps = track_fps
         self.print_fps = print_fps
@@ -52,18 +59,6 @@ class Game():
         pygame.font.init()
 
     def draw_rect(self, x, y, width, height, color=(0, 0, 0), alpha=1):
-        if x < 0:
-            width += x
-            x = 0
-            if width <= 0:
-                return
-
-        if y < 0:
-            height += y
-            y = 0
-            if height <= 0:
-                return
-
         gfxdraw.box(self.window, (x, y, width, height), list(color) + [int(alpha * 255)])
 
     def draw_circle(self, x, y, radius, color=(0, 0, 0)):
@@ -75,6 +70,9 @@ class Game():
         gfxdraw.aapolygon(game_window, points, color)
         gfxdraw.filled_polygon(game_window, points, color)
 
+    # You can pass in either the texts center coordinates or it edge coordinates
+    # or not coordinates at all for both dimensions. In the last case the text will
+    # be places in the windows center
     def draw_text(
             self, text,
             x_center=None, y_center=None,
@@ -82,47 +80,33 @@ class Game():
             font_family=None, font_size=30,
             color=(0, 0, 0)
     ):
+        TEST_optional_coordinates(x_left=x_left, x_center=x_center, y_top=y_top, y_center=y_center)
+
         font = pygame.font.SysFont(self.font_family if font_family is None else font_family, font_size)
-
         surface = font.render(text, True, color)
-
-        # The rectangle enclosing the text
-        (rx, ry, rw, rh) = surface.get_rect()
-
-        assert (
-                x_center is None or x_left is None
-        ), "Cannot set both x_center and x_left at the same time"
-        assert (
-                y_center is None or y_top is None
-        ), "Cannot set both y_center and y_top at the same time"
+        (rx, ry, rw, rh) = surface.get_rect()  # The rectangle enclosing the text
 
         if x_left is None and x_center is None:
-            # If nothing has been set, use window center
-            x = round((self.width - rw)/2)
-        elif x_center is not None:
-            x = round((x_center) - (rw/2))
+            x = round((self.width - rw)/2)  # If nothing has been set, use window center
         else:
-            x = round(x_left)
+            x = round(x_center - (rw/2)) if x_center is not None else round(x_left)
 
         if y_top is None and y_center is None:
-            # If nothing has been set, use window center
-            y = round((self.height - rh)/2)
-        elif y_center is not None:
-            y = round((y_center) - (rh/2))
+            y = round((self.height - rh)/2)  # If nothing has been set, use window center
         else:
-            y = round(y_top)
+            y = round(y_center - (rh/2)) if y_center is not None else round(y_top)
 
         self.window.blit(surface, (x, y))
 
     def draw_background(self, color=(255, 255, 255)):
+        TEST_color(color)
         self.window.fill(color)
 
-    def update(self, rects=None):
+    def update(self):
+        # 1. Update fps
         if self.track_fps:
-            max_fps = self.max_fps
-
-            timedelta = self.clock.tick(max_fps) * 0.001
             # self.fps converges towards the actual fps -> reduces noise in fps
+            timedelta = self.clock.tick(self.max_fps) * 0.001
             new_fps = round((self.fps*5 + (1/timedelta))/6)
 
             if self.print_fps and self.fps != new_fps:
@@ -130,15 +114,12 @@ class Game():
 
             self.fps = new_fps
 
-        if rects is None:
-            pygame.display.update()
-        else:
-            pygame.display.update(rects)
+        # 2. Update game window
+        pygame.display.update()
 
     def get_mouse_position(self):
         if pygame.mouse.get_focused() == 0:
-            # If mouse is not in window
-            return None
+            return None  # If mouse is not in window
         else:
             return pygame.mouse.get_pos()
 
@@ -146,6 +127,9 @@ class Game():
         pygame.quit()
         sys.exit()
 
+    # Draw a rect from its center-position with the SCALING factor from
+    # engine.constants applied and regular cartesion coordinates (y axis
+    # points upwards)
     def draw_rect_element(self, position, size, color=(0, 0, 0), alpha=1):
         rect_w = size[0] * SCALING_FACTOR
         rect_h = size[1] * SCALING_FACTOR
@@ -153,14 +137,21 @@ class Game():
         rect_y = self.height - (position[1] * SCALING_FACTOR + (rect_h/2))
         self.draw_rect(rect_x, rect_y, rect_w, rect_h, color=color, alpha=alpha)
 
+    # Draw a circle from its center-position with the SCALING factor from
+    # engine.constants applied and regular cartesion coordinates (y axis
+    # points upwards)
     def draw_circle_element(self, position, radius, color=(0, 0, 0)):
         circle_x = position[0] * SCALING_FACTOR
         circle_y = self.height - (position[1] * SCALING_FACTOR)
         circle_r = radius * SCALING_FACTOR
         self.draw_circle(circle_x, circle_y, circle_r, color=color)
 
+    # Draw small helper circles indicating the center of a game element as
+    # well as possible collisions
     def draw_helper_points(self, game_object):
-        reversed_color = [(255 - c) for c in game_object.color]
+        TEST_object_attributes(game_object, attributes=("position", "size", "color", "collisions"))
+
+        reversed_color = reverse_color(game_object.color)
         circle_radius = min(game_object.size) * 0.15
         circle_offsets = {
             "FLOOR": [0, -0.5 * game_object.size[1]],

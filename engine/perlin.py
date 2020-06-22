@@ -2,6 +2,19 @@
 import random
 import math
 
+from engine.tests import *
+
+
+"""
+
+This perlin class generate a naturally looking random noise.
+Perlin noise reference: https://en.wikipedia.org/wiki/Perlin_noise
+
+I implemented this Perlin noise myself because I sadly did not find a
+decent library for simple 1D noise ...
+
+
+"""
 WIDTH = 128
 WEIGHTS = {
     1: 1,
@@ -18,20 +31,11 @@ VALUE_RANGE = (0, 1)
 
 class PerlinNoise1D():
 
-    # Perlin noise reference: https://en.wikipedia.org/wiki/Perlin_noise
-
-    # I wrote this Perlin noise myself because I sadly did not find a
-    # a great library for simple 1D noise ... weird ...
-
     def __init__(
             self,
             width=None, weights=None, value_range=None,
             decimal_places=6, repeatable=False
     ):
-
-        # You could do all this type checking way more elegant with
-        # something like cerberus, but I don't want to add a library
-        # for this course!
 
         if width is None:
             width = WIDTH
@@ -41,34 +45,12 @@ class PerlinNoise1D():
         if weights is None:
             weights = WEIGHTS
         else:
-            assert isinstance(weights, int), "Weights has to be a dictionary"
-            assert all(
-                [isinstance(key, int) for key in weights]
-            ), "All weight keys must be integers"
-            assert all(
-                [isinstance(weight[key], int) or
-                 isinstance(weight[key], float)
-                 for key in weights]
-            ), "All weight keys must be integers"
-            assert all(
-                [int(width/key) == (width/key) for key in weights]
-            ), "The width must be dividable by all weight keys"
+            TEST_perlin_weights(width, weights)
 
         if value_range is None:
             value_range = VALUE_RANGE
         else:
-            assert (
-                isinstance(value_range, tuple) or isinstance(value_range, list)
-            ), "value_range has to be a tuple or a list"
-            assert all(
-                [len(value_range) == 2] +
-                [isinstance(boundary, int) or
-                 isinstance(boundary, float)
-                 for boundary in value_range]
-            ), "value_range must contain exactly two numbers (integers or floats)"
-            assert (
-                value_range[1] > value_range[0]
-            ), "value_range invalid: min >= max"
+            TEST_value_range(value_range)
 
         self.width = width
         self.weights = weights
@@ -139,7 +121,7 @@ class PerlinNoise1D():
 
         if isinstance(x, int) or isinstance(x, float):
 
-            assert 0 <= x < self.width, "x must be in range(0, width)"
+            assert 0 <= x <= self.width - 1, "x must be in range(0, width)"
 
             if int(x) == x:
                 return self.noise[int(x)]
@@ -183,8 +165,7 @@ class PerlinNoise1D():
 
 
 if __name__ == '__main__':
-
-    # dev dependency
+    # Dev dependency: I use matplotlib to plot the result as a graph
     import matplotlib.pyplot as plt
 
     # With repeatable set to True the array has the same start and end value
