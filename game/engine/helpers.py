@@ -81,11 +81,12 @@ def get_collision(barrier, moving_object, combat_collision=False, stacked_collis
         else:
             if vertical_overlap < (3 * horizontal_overlap):
                 if dy > 0:
-                    if not stacked_collision or barrier.velocity[1] > -ERROR_MARGIN:
-                        collision["FLOOR"] = barrier.position[1] + barrier.size[1]/2
+                    if stacked_collision and barrier.velocity[1] > -ERROR_MARGIN:
+                        collision["OBJECTS_BELOW"] = barrier
+                    collision["FLOOR"] = barrier.position[1] + barrier.size[1] / 2
                 else:
                     if stacked_collision:
-                        collision["OBJECT_ON_TOP"] = barrier
+                        collision["OBJECTS_ON_TOP"] = barrier
                     else:
                         collision["CEILING"] = barrier.position[1] - barrier.size[1]/2
             else:

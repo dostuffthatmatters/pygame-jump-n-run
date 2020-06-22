@@ -73,7 +73,7 @@ class Player:
             f"Only key-events from {list(self.keymap.keys())} allowed"
         self.keypressed[self.keymap[event_key]] = keydown
 
-    def update_for_collisions(self, new_velocity, new_position):
+    def update_for_collisions(self, new_velocity, new_position, timedelta):
 
         combat_collisions = Enemy.detect_all_collisions(self)
         for enemy in combat_collisions['BARRIER_KILLED']:
@@ -81,6 +81,8 @@ class Player:
         if len(combat_collisions['MOVING_OBJECT_KILLED']) > 0:
             self.kill()
 
+        # Collisions should refer to new velocity and position
+        self.velocity, self.position = new_velocity, new_position
         movement_collisions = reduce_to_relevant_collisions(
             merge_into_list_dict(
                 SquareBarrier.detect_all_collisions(self),
@@ -93,7 +95,7 @@ class Player:
             'FLOOR': None,
             'LEFT_WALL': None,
             'RIGHT_WALL': None,
-            'OBJECT_ON_TOP': [],
+            'OBJECTS_ON_TOP': movement_collisions['OBJECTS_ON_TOP'],
         }
 
         def snap_to_barrier(side):
@@ -104,15 +106,30 @@ class Player:
             new_position[dimension] = movement_collisions[side] + limit_center_offset
             new_collisions[side] = movement_collisions[side]
 
-        if movement_collisions['FLOOR'] is not None and new_velocity[1] < -ERROR_MARGIN:
-            snap_to_barrier('FLOOR')
-        elif movement_collisions['CEILING'] is not None and new_velocity[1] > +ERROR_MARGIN:
-            snap_to_barrier('CEILING')
+        if movement_collisions['CEILING'] is not None:
+            if new_velocity[1] > -ERROR_MARGIN:
+                snap_to_barrier('CEILING')
+            for _object in movement_collisions['OBJECTS_BELOW']:
+                _object.velocity[1] = 0
+                limit_center_offset = (_object.size[1]) + (self.size[1]/2) + 2 * ERROR_MARGIN
+                _object.position[1] = movement_collisions['CEILING'] - limit_center_offset
 
-        if movement_collisions['LEFT_WALL'] is not None and new_velocity[0] < -ERROR_MARGIN:
+        elif movement_collisions['FLOOR'] is not None and new_velocity[1] < +ERROR_MARGIN:
+            snap_to_barrier('FLOOR')
+
+        # Left and Right wall block is only applied if the player is moving towards that barrier
+        if movement_collisions['LEFT_WALL'] is not None and new_velocity[0] < ERROR_MARGIN:
             snap_to_barrier('LEFT_WALL')
-        elif movement_collisions['RIGHT_WALL'] is not None and new_velocity[0] > +ERROR_MARGIN:
+        elif movement_collisions['RIGHT_WALL'] is not None and new_velocity[0] > -ERROR_MARGIN:
             snap_to_barrier('RIGHT_WALL')
+
+        if len(movement_collisions['OBJECTS_BELOW']) > 0:
+            _object = movement_collisions['OBJECTS_BELOW'][0]
+            if (
+                _object.velocity[0] < 0 and new_collisions['LEFT_WALL'] is None or
+                _object.velocity[0] > 0 and new_collisions['RIGHT_WALL'] is None
+            ):
+                new_position[0] += _object.velocity[0] * timedelta
 
         self.collisions = new_collisions
         self.velocity = [round(v, COORDINATE_PRECISION) for v in new_velocity]
@@ -123,7 +140,7 @@ class Player:
 
         if self.collisions['RIGHT_WALL'] is None:
             if self.keypressed['RIGHT'] and not self.keypressed['LEFT']:
-                new_velocity[0] = RUN_VELOCITY
+                new_velocity[0] = +RUN_VELOCITY
         if self.collisions['LEFT_WALL'] is None:
             if self.keypressed['LEFT'] and not self.keypressed['RIGHT']:
                 new_velocity[0] = -RUN_VELOCITY
@@ -143,7 +160,7 @@ class Player:
             self.position[1] + new_velocity[1] * timedelta
         ]
 
-        self.update_for_collisions(new_velocity, new_position)
+        self.update_for_collisions(new_velocity, new_position, timedelta)
 
     @staticmethod
     def update_all(timedelta):
@@ -169,7 +186,8 @@ class Player:
         # 1. Fetch all possiple collisions
         all_collisions = {
             'FLOOR': [],
-            'OBJECT_ON_TOP': [],
+            'OBJECTS_ON_TOP': [],
+            'OBJECTS_BELOW': [],
             'LEFT_WALL': [],
             'RIGHT_WALL': [],
         }
