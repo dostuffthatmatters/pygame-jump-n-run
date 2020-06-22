@@ -1,13 +1,20 @@
-from barrier import SquareBarrier
-from v4 import Enemy
 
+# Engine
+from engine.helpers import merge_into_list_dict, reduce_to_relevant_collisions, get_collision
+from engine.tests import *
+
+# Constants
 from pygame.constants import *
-from constants import *
-from helpers import merge_into_list_dict, reduce_to_relevant_collisions, get_collision
+from engine.constants import *
+
+# Components
+from v4.barrier import SquareBarrier
+from v4.enemy import Enemy
+
 
 class Player:
 
-    # Keeps track of all instances of the Player class
+    # A list of all Player instances
     instances = []
 
     def __init__(
@@ -27,24 +34,25 @@ class Player:
                 K_RIGHT: 'RIGHT'
             }
         else:
-            # Just a few tests whether the passed keymap is valid
-            assert \
-                all([value in ('UP', 'LEFT', 'DOWN', 'RIGHT') for value in keymap.values()]), \
-                'All keys [UP, LEFT, RIGHT] required in keymap property'
+            TEST_keymap(keymap)
 
-            assert \
-                all([isinstance(key, int) for key in keymap.keys()]), \
-                'All keys for [UP, LEFT, DOWN, RIGHT] in keymap property have to be integers (e.g. pygame.K_UP)'
-
-            assert len(keymap) == 4, 'Only keys for [UP, LEFT, DOWN, RIGHT] allowed in keymap property'
-
-        self.position = position
+        # All properties as lists with length 2
+        # => [x-component, y-component]
+        self.starting_position = [p for p in position]
+        self.position = [p for p in position]
         self.size = [width, height]
         self.velocity = [0.0, 0.0]
 
-        self.alive = True
+        # Game specific stuff
+        self.deaths = 0
+        self.enemies_killed = 0
+        self.old_corpses = []
 
+        # Store the relations between keyboard keys and
+        # movement direction i.e. WASD vs ULDR
         self.keymap = keymap
+
+        # Store which keys are currently being pressed
         self.keypressed = {
             'UP': False,
             'LEFT': False,
@@ -55,31 +63,44 @@ class Player:
         self.name = name
         self.color = color
 
+        # The collisions that are currently being detected
         self.collisions = {
             'CEILING': None,
             'FLOOR': None,
             'LEFT_WALL': None,
-            'RIGHT_WALL': None
+            'RIGHT_WALL': None,
+            'OBJECTS_ON_TOP': []
         }
 
-        # Add this new instance to the instance-list Player.players
+        # Add this new instances to the instance-list from above
         Player.instances.append(self)
 
     def keypress(self, event_key, keydown):
-        assert \
-            event_key in self.keymap.keys(),\
-            f"Only key-events from {list(self.keymap.keys())} allowed"
+        # We know from self.keymap which event.key will lead to which
+        # direction in self.keypressed being set to true or false
+
+        # "keydown" is a boolean value and "event_key" is a constant
+        # like "pygame.K_LEFT"/"pygame.K_RIGHT"
+
+        TEST_keypress(self.keymap, event_key)
         self.keypressed[self.keymap[event_key]] = keydown
 
     def update_for_collisions(self, new_velocity, new_position, timedelta):
 
+        # 1. Detect combat collisions with enemies. "MOVING_OBJECT"
+        #    refers to the player. "BARRIER" refers to the enemy.
         combat_collisions = Enemy.detect_all_collisions(self)
         for enemy in combat_collisions['BARRIER_KILLED']:
             enemy.kill()
+            self.enemies_killed += 1
         if len(combat_collisions['MOVING_OBJECT_KILLED']) > 0:
             self.kill()
+            return
 
-        # Collisions should refer to new velocity and position
+        # 2. Detecting movement collisions with Barriers and other
+        #    players. Collisions should refer to the new velocity
+        #    and new position that is why we preliminarily update
+        #    the players state (self.)
         self.velocity, self.position = new_velocity, new_position
         movement_collisions = reduce_to_relevant_collisions(
             merge_into_list_dict(
@@ -87,6 +108,12 @@ class Player:
                 Player.detect_all_collisions(self)
             )
         )
+
+        # The strategy now is to go through all the collisions that
+        # were detected and successively adjust new_velocity and
+        # new_position if needed. In the end the players state (self.
+        # will be updated with the adjusted position/velocity once
+        # again
 
         new_collisions = {
             'CEILING': None,
@@ -96,6 +123,10 @@ class Player:
             'OBJECTS_ON_TOP': movement_collisions['OBJECTS_ON_TOP'],
         }
 
+        # "Snap" to Wall/Floor/Ceiling when hitting one. Example
+        #   Moving left & new_x = -0.04
+        #   Wall detected at x=0
+        #   Snaps to x=0 and velocity *= -1 (turns around)
         def snap_to_barrier(side):
             dimension = 1 if (side in ('FLOOR', 'CEILING')) else 0
             coordinate_direction = +1 if (side in ('FLOOR', 'LEFT_WALL')) else -1
@@ -104,23 +135,34 @@ class Player:
             new_position[dimension] = movement_collisions[side] + limit_center_offset
             new_collisions[side] = movement_collisions[side]
 
+        # 3. React to vertical collisions
         if movement_collisions['CEILING'] is not None:
             if new_velocity[1] > -ERROR_MARGIN:
                 snap_to_barrier('CEILING')
+
+            # Edge case for two players standing on top of each other with
+            # the bottom player jumping up and only the top player hitting
+            # a ceiling. This snippet is needed so that the upper player is
+            # not being "forced into the wall" and the bottom player detects
+            # the ceiling indirectly
             for _object in movement_collisions['OBJECTS_BELOW']:
                 _object.velocity[1] = 0
                 limit_center_offset = (_object.size[1]) + (self.size[1]/2) + 2 * ERROR_MARGIN
                 _object.position[1] = movement_collisions['CEILING'] - limit_center_offset
-
         elif movement_collisions['FLOOR'] is not None and new_velocity[1] < +ERROR_MARGIN:
             snap_to_barrier('FLOOR')
 
-        # Left and Right wall block is only applied if the player is moving towards that barrier
+        # 4. React to horizontal collisions. Left and Right wall block
+        # is only applied if the player is moving towards that barrier
         if movement_collisions['LEFT_WALL'] is not None and new_velocity[0] < ERROR_MARGIN:
             snap_to_barrier('LEFT_WALL')
         elif movement_collisions['RIGHT_WALL'] is not None and new_velocity[0] > -ERROR_MARGIN:
             snap_to_barrier('RIGHT_WALL')
 
+        # 5. When standing on top of another player and that player moves
+        #    then the player on top should also be moved by that players
+        #    movement = the player on top will be carried around (as long
+        # as he doe not hit a wall
         if len(movement_collisions['OBJECTS_BELOW']) > 0:
             _object = movement_collisions['OBJECTS_BELOW'][0]
             if (
@@ -129,13 +171,21 @@ class Player:
             ):
                 new_position[0] += _object.velocity[0] * timedelta
 
+        # 6. Now new_velocity and new_position has been adjusted to conform
+        #    with collisions -> player state will be updated with the adjusted
+        #    values
         self.collisions = new_collisions
         self.velocity = [round(v, COORDINATE_PRECISION) for v in new_velocity]
         self.position = [round(p, COORDINATE_PRECISION) for p in new_position]
 
+    # Update a single Player instances
     def update(self, timedelta):
-        new_velocity = [0, 0]
 
+        # Preliminary new velocity
+        new_velocity = [0.0, 0.0]
+
+        # Set current horizontal velocity according to
+        # self.collisions and self.keypressed
         if self.collisions['RIGHT_WALL'] is None:
             if self.keypressed['RIGHT'] and not self.keypressed['LEFT']:
                 new_velocity[0] = +RUN_VELOCITY
@@ -143,42 +193,71 @@ class Player:
             if self.keypressed['LEFT'] and not self.keypressed['RIGHT']:
                 new_velocity[0] = -RUN_VELOCITY
 
+        # Set current vertical velocity according to
+        # self.collisions and self.keypressed
         if self.collisions['FLOOR'] is not None:
             if self.keypressed['UP'] and not self.keypressed['DOWN']:
                 if self.velocity[1] < ERROR_MARGIN:
                     new_velocity[1] = JUMP_VELOCITY
         else:
             if self.keypressed['DOWN']:
-                new_velocity[1] = -JUMP_VELOCITY  # A Mario like forced smash downwards
+                # A Mario like forced smash downwards
+                new_velocity[1] = -JUMP_VELOCITY
             else:
+                # Regular gravitational acceleration
                 new_velocity[1] = self.velocity[1] - GRAVITY * timedelta
 
+        # Preliminary new position
         new_position = [
             self.position[0] + new_velocity[0] * timedelta,
             self.position[1] + new_velocity[1] * timedelta
         ]
 
+        # Adjust new_velocity and new_position by detecting collisions
+        # for the new state and modifying the new state to comply with
+        # the collisions with other enemies, players and barriers
         self.update_for_collisions(new_velocity, new_position, timedelta)
 
+    # Update all Player instances
     @staticmethod
     def update_all(timedelta):
         for player in Player.instances:
-            if player.alive:
-                player.update(timedelta)
+            player.update(timedelta)
 
+    # Draw a single Player instances
     def draw(self, game):
-        game.draw_rect_element(self.position, self.size, color=self.color, alpha=1.0 if self.alive else 0.3)
-        if DRAW_HELPERS and self.alive:
+        game.draw_rect_element(self.position, self.size, color=self.color, alpha=1.0)
+        if DRAW_HELPERS:
             game.draw_helper_points(self)
 
+        for corpse in self.old_corpses:
+            game.draw_rect_element(corpse, self.size, color=self.color, alpha=0.3)
+
+    # Draw all Player instances
     @staticmethod
     def draw_all(game):
         for player in Player.instances:
             player.draw(game)
 
     def kill(self):
-        self.alive = False
+        # "kill" moves the player to its starting position and.
+        # In addition to that, the position-of-death will be
+        # appended to the self.corpses array in order to draw
+        # old corpses on the screen
+        self.old_corpses.append(self.position)
+        self.deaths += 1
+        self.collisions = {
+            'CEILING': None,
+            'FLOOR': None,
+            'LEFT_WALL': None,
+            'RIGHT_WALL': None,
+            'OBJECTS_ON_TOP': []
+        }
+        self.velocity = [0, 0]
+        self.position = [p for p in self.starting_position]
 
+    # The method used by a player (=moving_player) to detect all
+    # collisions with other players from the Player.instances list
     @staticmethod
     def detect_all_collisions(moving_player):
         # 1. Fetch all possiple collisions
@@ -191,7 +270,7 @@ class Player:
         }
 
         for player in Player.instances:
-            if player != moving_player and player.alive:
+            if player != moving_player:
                 collision = get_collision(barrier=player, moving_object=moving_player, stacked_collision=True)
                 all_collisions = merge_into_list_dict(
                     all_collisions,
