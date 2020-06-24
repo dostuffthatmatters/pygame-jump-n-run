@@ -21,6 +21,22 @@ def reverse_color(color):
     TEST_color(color)
     return [(255 - c) for c in color]
 
+def ends_with(string, appendix):
+    assert isinstance(string, str), "Parameter string and has to be a string"
+
+    if isinstance(appendix, str):
+        if len(string) < len(appendix):
+            return False
+        return string[-len(appendix):] == appendix
+    elif isinstance(appendix, list) or isinstance(appendix, tuple):
+        assert \
+            all([isinstance(appendix_option, str) for appendix_option in appendix]), \
+            "Parameter appendix and has to be a string or a list/tuple of strings"
+
+        return any([ends_with(string, appendix_option) for appendix_option in appendix])
+
+    assert False, "Parameter appendix and has to be a string or a list/tuple of strings"
+
 # This function merges two dicts of the schema: {key: [value1, ...], ...} or
 # {key: value3, ...} into {key: [value1, ..., value3, ...], ...}
 # so that the list is being appended upon instead of replaced
