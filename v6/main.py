@@ -3,6 +3,7 @@
 import pygame
 import time
 from datetime import datetime
+from copy import deepcopy
 
 # Engine
 from engine.game import Game
@@ -30,41 +31,19 @@ game = Game(
 )
 
 
-heart_spritesheet = {
-    "spritesheet_path": "assets/dungeon_spritesheets/heart_spritesheet@8x.png",
-    "row_count": 1, "column_count": 3,
-}
-enemy_spritesheet = {
-    "spritesheet_path": "assets/dungeon_spritesheets/enemy_spritesheet@8x.png",
-    "row_count": 1, "column_count": 5,
-}
-player_spritesheet = {
-    "spritesheet_path": "assets/dungeon_spritesheets/player_spritesheet@8x.png",
-    "row_count": 2, "column_count": 9,
-}
-get_sprite = lambda spritesheet, i, j, n, **kwargs: Sprite(
-    **spritesheet, row_start_index=i, column_start_index=j, number_of_images=n, **kwargs
-)
+# 2. Initialize graphics
+# Graphics have to be import after the game has been initialized! (Pygame constraint)
+from v6.graphics import *
 
-# 2. Load sprites
-heart_full_sprite = get_sprite(heart_spritesheet, 0, 0, 1, size=(40, 40))
-heart_empty_sprite = get_sprite(heart_spritesheet, 0, 2, 1, size=(40, 40))
-dead_enemy_sprite = get_sprite(enemy_spritesheet, 0, 4, 1, size=(32, 34))
 
 # 3. Initialize players
 player_1 = Player(
-    "Max", color=(200, 0, 50), position=(21.5, 12),
-    keymap={K_w: 'UP', K_a: 'LEFT', K_s: 'DOWN', K_d: 'RIGHT'},
-    sprite_run=get_sprite(player_spritesheet, 0, 0, 8),
-    sprite_jump_up=get_sprite(player_spritesheet, 0, 0, 1),
-    sprite_jump_down=get_sprite(player_spritesheet, 0, 8, 1),
+    "Max", color=(200, 0, 50), position=(21.5, 12), **player_1_sprites,
+    keymap={K_w: 'UP', K_a: 'LEFT', K_s: 'DOWN', K_d: 'RIGHT'}
 )
 player_2 = Player(
-    "Moritz", color=(50, 0, 200), position=(14.5, 12),
-    keymap={K_UP: 'UP', K_LEFT: 'LEFT', K_DOWN: 'DOWN', K_RIGHT: 'RIGHT'},
-    sprite_run=get_sprite(player_spritesheet, 1, 0, 8),
-    sprite_jump_up=get_sprite(player_spritesheet, 1, 0, 1),
-    sprite_jump_down=get_sprite(player_spritesheet, 1, 8, 1),
+    "Moritz", color=(50, 0, 200), position=(14.5, 12), **player_2_sprites,
+    keymap={K_UP: 'UP', K_LEFT: 'LEFT', K_DOWN: 'DOWN', K_RIGHT: 'RIGHT'}
 )
 
 # 4. Initialize enemies
@@ -101,7 +80,7 @@ def draw():
     SquareBarrier.draw_all(game)
     Enemy.draw_all(game)
     Player.draw_all(game)
-    draw_flag_pole(game)
+    draw_win_column(game)
 
     # 2. Draw scores if score-list is not empty
     draw_scores(game, sorted_scores)
