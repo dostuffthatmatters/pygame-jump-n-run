@@ -8,8 +8,8 @@ from pygame.constants import *
 from engine.constants import *
 
 # Components
-from v5.barrier import SquareBarrier
-from v5.enemy import Enemy
+from v6.barrier import SquareBarrier
+from v6.enemy import Enemy
 
 
 class Player:

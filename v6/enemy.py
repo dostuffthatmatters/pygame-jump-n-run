@@ -7,7 +7,7 @@ from engine.helpers import merge_into_list_dict, get_collision
 from engine.constants import *
 
 # Components
-from v5.barrier import SquareBarrier
+from v6.barrier import SquareBarrier
 
 
 class Enemy:

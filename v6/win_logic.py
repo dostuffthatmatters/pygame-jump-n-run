@@ -6,7 +6,7 @@ from datetime import datetime
 from engine.constants import *
 
 # Components
-from v5.player import Player
+from v6.player import Player
 
 
 def check_for_win(win_area, sorted_scores, game_finish_time):

@@ -166,3 +166,7 @@ class Game():
                 if game_object.collisions[side] is not None:
                     position = [game_object.position[dim] + circle_offsets[side][dim] for dim in (0, 1)]
                     self.draw_circle_element(position, circle_radius, color=reversed_color)
+
+    def draw_sprite(self, image, center_position):
+        width, height = image.get_rect()[2:]
+        self.window.blit(image, (center_position[0]-(width/2), center_position[1]-(height/2)))

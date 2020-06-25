@@ -6,16 +6,65 @@ from datetime import datetime
 
 # Engine
 from engine.game import Game
+from engine.sprite import Sprite
 
 # Constants
 from pygame.constants import *
 from engine.constants import *
 
 # Components
-from v5.player import Player
-from v5.enemy import Enemy
-from v5.barrier import SquareBarrier
-from v5.win_logic import check_for_win, draw_flag_pole, draw_scores
+from v6.player import Player
+from v6.enemy import Enemy
+from v6.barrier import SquareBarrier
+from v6.win_logic import check_for_win, draw_flag_pole, draw_scores
+
+sorted_scores = []
+game_finish_time = None
+win_area = ((46.75, 47.25), (1.5, 12))
+
+# 1. Initialize game
+game = Game(
+    width=50 * SCALING_FACTOR,
+    height=20 * SCALING_FACTOR,
+    print_fps=False, max_fps=MAX_DRAW_FPS
+)
+
+# 2. Load sprites
+heart_full_sprite = Sprite(spritesheet_path="assets/ui_heart_full.png", row_count=1, column_count=1, scale=2)
+heart_empty_sprite = Sprite(spritesheet_path="assets/ui_heart_empty.png", row_count=1, column_count=1, scale=2)
+
+
+# 3. Initialize players
+player_1 = Player(
+    "Max", color=(200, 0, 50), position=(21.5, 12),
+    keymap={K_w: 'UP', K_a: 'LEFT', K_s: 'DOWN', K_d: 'RIGHT'}
+)
+player_2 = Player(
+    "Moritz", color=(50, 0, 200), position=(14.5, 12),
+    keymap={K_UP: 'UP', K_LEFT: 'LEFT', K_DOWN: 'DOWN', K_RIGHT: 'RIGHT'}
+)
+
+# 4. Initialize enemies
+for x in range(2, 32, 3):
+    Enemy(position=(x, 2))
+    pass
+
+# 5. Initialize barriers
+SquareBarrier(x_left=-1, y_top=21, width=52, height=1)  # window top
+SquareBarrier(x_left=-1, y_top=1, width=52, height=1)  # window bottom
+SquareBarrier(x_left=-1, y_top=21, width=1, height=22)  # window left
+SquareBarrier(x_left=50, y_top=21, width=1, height=22)  # window right
+
+SquareBarrier(x_left=12, y_top=6, width=5, height=1)  # step 1
+SquareBarrier(x_left=19, y_top=8, width=5, height=1)  # step 2
+SquareBarrier(x_left=26, y_top=10, width=5, height=1)  # step 3
+
+SquareBarrier(x_left=36, y_top=9, width=2, height=8)  # pyramid column 1
+SquareBarrier(x_left=38, y_top=7, width=2, height=6)  # pyramid column 2
+SquareBarrier(x_left=40, y_top=5, width=2, height=4)  # pyramid column 3
+SquareBarrier(x_left=42, y_top=3, width=2, height=2)  # pyramid column 4
+
+SquareBarrier(x_left=45.5, y_top=1.5, width=3, height=0.52, color=(200, 200, 0))  # flag bottom
 
 
 def update(timedelta):
@@ -24,7 +73,7 @@ def update(timedelta):
     Player.update_all(timedelta)
 
 
-def draw(game, player_1, player_2, sorted_scores):
+def draw():
 
     # 1. Draw game elements
     game.draw_background()
@@ -43,14 +92,7 @@ def draw(game, player_1, player_2, sorted_scores):
         game.draw_text(text=f"position: {player_1.position}, velocity: {player_1.velocity}",
                        x_left=5, y_top=30, font_size=20, color=player_1.color)
     else:
-        game.draw_text(text=f"{player_1.name} - "
-                            f"{player_1.enemies_killed} Kill(s), "
-                            f"{3 - player_1.lifes_left} Death(s),",
-                       x_left=5, y_top=5, font_size=20, color=player_1.color)
-        game.draw_text(text=f"{player_2.name} - "
-                            f"{player_2.enemies_killed} Kill(s), "
-                            f"{3 - player_2.lifes_left} Death(s),",
-                       x_left=5, y_top=30, font_size=20, color=player_2.color)
+        draw_player_stats()
 
     game.draw_text(text=f"{game.fps * SIMULATION_FRAMES_PER_DRAW} FPS (simulation) "
                         f"{game.fps} FPS (canvas)", x_left=5, y_top=55, font_size=20)
@@ -59,50 +101,34 @@ def draw(game, player_1, player_2, sorted_scores):
     game.update()
 
 
+def draw_player_stats():
+
+    for i in range(3):
+        if player_1.lifes_left > i:
+            player_1_image = heart_full_sprite.getImage()
+        else:
+            player_1_image = heart_empty_sprite.getImage()
+
+        if player_2.lifes_left > i:
+            player_2_image = heart_full_sprite.getImage()
+        else:
+            player_2_image = heart_empty_sprite.getImage()
+
+        game.draw_sprite(player_1_image, (game.width - 32 - i*32, 32))
+        game.draw_sprite(player_2_image, (32 + i*32, 32))
+
+    game.draw_text(text=f"{player_1.name} - "
+                        f"{player_1.enemies_killed} Kill(s), "
+                        f"{3 - player_1.lifes_left} Death(s),",
+                   x_left=5, y_top=5, font_size=20, color=player_1.color)
+    game.draw_text(text=f"{player_2.name} - "
+                        f"{player_2.enemies_killed} Kill(s), "
+                        f"{3 - player_2.lifes_left} Death(s),",
+                   x_left=5, y_top=30, font_size=20, color=player_2.color)
+
 def run():
-
-    sorted_scores = []
-    game_finish_time = None
-    win_area = ((46.75, 47.25), (1.5, 12))
-
-    # 1. Initialize game
-    game = Game(
-        width=50 * SCALING_FACTOR,
-        height=20 * SCALING_FACTOR,
-        print_fps=False, max_fps=MAX_DRAW_FPS
-    )
-
-    # 2. Initialize players
-    player_1 = Player(
-        "Max", color=(200, 0, 50), position=(21.5, 12),
-        keymap={K_w: 'UP', K_a: 'LEFT', K_s: 'DOWN', K_d: 'RIGHT'}
-    )
-    player_2 = Player(
-        "Moritz", color=(50, 0, 200), position=(14.5, 12),
-        keymap={K_UP: 'UP', K_LEFT: 'LEFT', K_DOWN: 'DOWN', K_RIGHT: 'RIGHT'}
-    )
-
-    # 3. Initialize enemies
-    for x in range(2, 32, 3):
-        Enemy(position=(x, 2))
-        pass
-
-    # 4. Initialize barriers
-    SquareBarrier(x_left=-1, y_top=21, width=52, height=1)  # window top
-    SquareBarrier(x_left=-1, y_top=1, width=52, height=1)  # window bottom
-    SquareBarrier(x_left=-1, y_top=21, width=1, height=22)  # window left
-    SquareBarrier(x_left=50, y_top=21, width=1, height=22)  # window right
-
-    SquareBarrier(x_left=12, y_top=6, width=5, height=1)  # step 1
-    SquareBarrier(x_left=19, y_top=8, width=5, height=1)  # step 2
-    SquareBarrier(x_left=26, y_top=10, width=5, height=1)  # step 3
-
-    SquareBarrier(x_left=36, y_top=9, width=2, height=8)  # pyramid column 1
-    SquareBarrier(x_left=38, y_top=7, width=2, height=6)  # pyramid column 2
-    SquareBarrier(x_left=40, y_top=5, width=2, height=4)  # pyramid column 3
-    SquareBarrier(x_left=42, y_top=3, width=2, height=2)  # pyramid column 4
-
-    SquareBarrier(x_left=45.5, y_top=1.5, width=3, height=0.52, color=(200, 200, 0))  # flag bottom
+    global sorted_scores
+    global game_finish_time
 
     # After game_finish_time has been set from inside check_for_win
     # The game will continue to run for 6 seconds and then end
@@ -142,4 +168,4 @@ def run():
             update(1/100)
 
         # 3. Draw (visualization)
-        draw(game, player_1, player_2, sorted_scores)
+        draw()
