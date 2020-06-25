@@ -34,46 +34,37 @@ heart_spritesheet = {
     "spritesheet_path": "assets/dungeon_spritesheets/heart_spritesheet@8x.png",
     "row_count": 1, "column_count": 3,
 }
-# 2. Load sprites
-heart_full_sprite = Sprite(
-    **heart_spritesheet,
-    column_start_index=0, number_of_images=1,
-    size=(40, 40)
-)
-heart_empty_sprite = Sprite(
-    **heart_spritesheet,
-    column_start_index=2, number_of_images=1,
-    size=(40, 40)
-)
-dead_enemy_sprite = Sprite(
-    spritesheet_path="assets/dungeon_spritesheets/enemy_spritesheet@8x.png", row_count=1, column_count=5,
-    column_start_index=4, size=(32, 34)
-)
-
+enemy_spritesheet = {
+    "spritesheet_path": "assets/dungeon_spritesheets/enemy_spritesheet@8x.png",
+    "row_count": 1, "column_count": 5,
+}
 player_spritesheet = {
     "spritesheet_path": "assets/dungeon_spritesheets/player_spritesheet@8x.png",
     "row_count": 2, "column_count": 9,
 }
-
-get_sprite = lambda i, j, n: Sprite(
-    **player_spritesheet,
-    row_start_index=i, column_start_index=j, number_of_images=n
+get_sprite = lambda spritesheet, i, j, n, **kwargs: Sprite(
+    **spritesheet, row_start_index=i, column_start_index=j, number_of_images=n, **kwargs
 )
+
+# 2. Load sprites
+heart_full_sprite = get_sprite(heart_spritesheet, 0, 0, 1, size=(40, 40))
+heart_empty_sprite = get_sprite(heart_spritesheet, 0, 2, 1, size=(40, 40))
+dead_enemy_sprite = get_sprite(enemy_spritesheet, 0, 4, 1, size=(32, 34))
 
 # 3. Initialize players
 player_1 = Player(
     "Max", color=(200, 0, 50), position=(21.5, 12),
     keymap={K_w: 'UP', K_a: 'LEFT', K_s: 'DOWN', K_d: 'RIGHT'},
-    sprite_run=get_sprite(0, 0, 8),
-    sprite_jump_up=get_sprite(0, 0, 1),
-    sprite_jump_down=get_sprite(0, 8, 1),
+    sprite_run=get_sprite(player_spritesheet, 0, 0, 8),
+    sprite_jump_up=get_sprite(player_spritesheet, 0, 0, 1),
+    sprite_jump_down=get_sprite(player_spritesheet, 0, 8, 1),
 )
 player_2 = Player(
     "Moritz", color=(50, 0, 200), position=(14.5, 12),
     keymap={K_UP: 'UP', K_LEFT: 'LEFT', K_DOWN: 'DOWN', K_RIGHT: 'RIGHT'},
-    sprite_run=get_sprite(1, 0, 8),
-    sprite_jump_up=get_sprite(1, 0, 1),
-    sprite_jump_down=get_sprite(1, 8, 1),
+    sprite_run=get_sprite(player_spritesheet, 1, 0, 8),
+    sprite_jump_up=get_sprite(player_spritesheet, 1, 0, 1),
+    sprite_jump_down=get_sprite(player_spritesheet, 1, 8, 1),
 )
 
 # 4. Initialize enemies
@@ -81,27 +72,20 @@ for x in range(2, 32, 3):
     Enemy(position=(x, 2))
     pass
 
-
-barrier_sprites = [Sprite(
-    spritesheet_path="assets/dungeon_spritesheets/brick_spritesheet@8x.png",
-    row_count=1, column_count=8, column_start_index=i, number_of_images=1,
-    size=(SCALING_FACTOR, SCALING_FACTOR)
-) for i in range(8)]
-
 # 5. Initialize barriers
-SquareBarrier(x_left=-1, y_top=21, width=52, height=1, sprites=barrier_sprites)  # window top
-SquareBarrier(x_left=-1, y_top=1, width=52, height=1, sprites=barrier_sprites)  # window bottom
-SquareBarrier(x_left=-1, y_top=21, width=1, height=22, sprites=barrier_sprites)  # window left
-SquareBarrier(x_left=50, y_top=21, width=1, height=22, sprites=barrier_sprites)  # window right
+SquareBarrier(x_left=-1, y_top=21, width=52, height=1)  # window top
+SquareBarrier(x_left=-1, y_top=1, width=52, height=1)  # window bottom
+SquareBarrier(x_left=-1, y_top=21, width=1, height=22)  # window left
+SquareBarrier(x_left=50, y_top=21, width=1, height=22)  # window right
 
-SquareBarrier(x_left=12, y_top=6, width=5, height=1, sprites=barrier_sprites)  # step 1
-SquareBarrier(x_left=19, y_top=8, width=5, height=1, sprites=barrier_sprites)  # step 2
-SquareBarrier(x_left=26, y_top=10, width=5, height=1, sprites=barrier_sprites)  # step 3
+SquareBarrier(x_left=12, y_top=6, width=5, height=1)  # step 1
+SquareBarrier(x_left=19, y_top=8, width=5, height=1)  # step 2
+SquareBarrier(x_left=26, y_top=10, width=5, height=1)  # step 3
 
-SquareBarrier(x_left=36, y_top=9, width=2, height=8, sprites=barrier_sprites)  # pyramid column 1
-SquareBarrier(x_left=38, y_top=7, width=2, height=6, sprites=barrier_sprites)  # pyramid column 2
-SquareBarrier(x_left=40, y_top=5, width=2, height=4, sprites=barrier_sprites)  # pyramid column 3
-SquareBarrier(x_left=42, y_top=3, width=2, height=2, sprites=barrier_sprites)  # pyramid column 4
+SquareBarrier(x_left=36, y_top=9, width=2, height=8)  # pyramid column 1
+SquareBarrier(x_left=38, y_top=7, width=2, height=6)  # pyramid column 2
+SquareBarrier(x_left=40, y_top=5, width=2, height=4)  # pyramid column 3
+SquareBarrier(x_left=42, y_top=3, width=2, height=2)  # pyramid column 4
 
 
 def update(timedelta):
