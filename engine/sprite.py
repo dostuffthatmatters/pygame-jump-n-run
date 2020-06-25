@@ -133,8 +133,9 @@ class Sprite(pygame.sprite.Sprite):
         if self.size is not None:
             image = pygame.transform.scale(image, self.size)
         elif self.scale is not None:
-            rect_size = image.get_rect()[2:]
-            image = pygame.transform.scale(image, (rect_size[0] * self.scale, rect_size[1] * self.scale))
+            sprite_size = image.get_rect()[2:]
+            new_size = [round(s) for s in (sprite_size[0] * self.scale, sprite_size[1] * self.scale)]
+            image = pygame.transform.scale(image, new_size)
 
         return pygame.transform.flip(image, self.flip[0], self.flip[1])
 

@@ -32,6 +32,7 @@ game = Game(
 # 2. Load sprites
 heart_full_sprite = Sprite(spritesheet_path="assets/ui_heart_full.png", row_count=1, column_count=1, scale=2)
 heart_empty_sprite = Sprite(spritesheet_path="assets/ui_heart_empty.png", row_count=1, column_count=1, scale=2)
+dead_enemy_sprite = Sprite(spritesheet_path="assets/dead_enemy.png", row_count=1, column_count=1, scale=1.5)
 
 
 # 3. Initialize players
@@ -91,11 +92,10 @@ def draw():
                        x_left=5, y_top=5, font_size=20, color=player_1.color)
         game.draw_text(text=f"position: {player_1.position}, velocity: {player_1.velocity}",
                        x_left=5, y_top=30, font_size=20, color=player_1.color)
+        game.draw_text(text=f"{game.fps * SIMULATION_FRAMES_PER_DRAW} FPS (simulation) "
+                            f"{game.fps} FPS (canvas)", x_left=5, y_top=55, font_size=20)
     else:
         draw_player_stats()
-
-    game.draw_text(text=f"{game.fps * SIMULATION_FRAMES_PER_DRAW} FPS (simulation) "
-                        f"{game.fps} FPS (canvas)", x_left=5, y_top=55, font_size=20)
 
     # 4. Update game window (and fps)
     game.update()
@@ -114,17 +114,15 @@ def draw_player_stats():
         else:
             player_2_image = heart_empty_sprite.getImage()
 
-        game.draw_sprite(player_1_image, (game.width - 32 - i*32, 32))
-        game.draw_sprite(player_2_image, (32 + i*32, 32))
+        game.draw_sprite(player_1_image, (32 + i*32, 32))
+        game.draw_sprite(player_2_image, (game.width - 32 - i*32, 32))
 
-    game.draw_text(text=f"{player_1.name} - "
-                        f"{player_1.enemies_killed} Kill(s), "
-                        f"{3 - player_1.lifes_left} Death(s),",
-                   x_left=5, y_top=5, font_size=20, color=player_1.color)
-    game.draw_text(text=f"{player_2.name} - "
-                        f"{player_2.enemies_killed} Kill(s), "
-                        f"{3 - player_2.lifes_left} Death(s),",
-                   x_left=5, y_top=30, font_size=20, color=player_2.color)
+    for i in range(player_1.enemies_killed):
+        game.draw_sprite(dead_enemy_sprite.getImage(), (32 + i * 32, 64))
+
+    for i in range(player_2.enemies_killed):
+        game.draw_sprite(dead_enemy_sprite.getImage(), (game.width - 32 - i * 32, 64))
+
 
 def run():
     global sorted_scores
