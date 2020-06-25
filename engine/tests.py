@@ -60,22 +60,23 @@ def TEST_mandatory_coordinates(x_left=None, x_center=None, y_top=None, y_center=
         is_number(y_top if y_top is not None else y_center), \
         "y has to be a number (integer or float)"
 
-def TEST_optional_coordinates(x_left=None, x_center=None, y_top=None, y_center=None):
-    assert (
-            x_center is None or x_left is None
-    ), "Cannot set both x_center and x_left at the same time"
-    if not all([c is None for c in (x_left, x_center)]):
-        assert \
-            is_number(x_left if x_left is not None else x_center), \
-            "x has to be a number (integer or float)"
+def TEST_optional_coordinates(
+        x_left=None, x_center=None, x_right=None,
+        y_top=None, y_center=None, y_bottom=None
+):
+    assert \
+        len(list(filter(lambda x: x is not None, (x_left, x_center, x_right)))) <= 1,\
+        "Can only set one of (x_left, x_center, x_right) at once"
+    assert \
+        all([is_number(x) or x is None for x in (x_left, x_center, x_right)]), \
+        "x has to be a number (integer or float)"
 
-    assert (
-            y_center is None or y_top is None
-    ), "Cannot set both y_center and y_top at the same time"
-    if not all([c is None for c in (y_top, y_center)]):
-        assert \
-            is_number(y_top if y_top is not None else y_center), \
-            "y has to be a number (integer or float)"
+    assert \
+        len(list(filter(lambda y: y is not None, (y_top, y_center, y_bottom)))) <= 1, \
+        "Can only set one of (y_top, y_center, y_bottom) at once"
+    assert \
+        all([is_number(y) or y is None for y in (y_top, y_center, y_bottom)]), \
+        "y has to be a number (integer or float)"
 
 def TEST_object_attributes(game_object, attributes=("position", "size", "color")):
     for attribute in attributes:

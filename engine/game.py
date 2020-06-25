@@ -75,26 +75,41 @@ class Game():
     # be places in the windows center
     def draw_text(
             self, text,
-            x_center=None, y_center=None,
-            x_left=None, y_top=None,
+            x_left=None, x_center=None, x_right=None,
+            y_top=None, y_center=None, y_bottom=None,
             font_family=None, font_size=30,
             color=(0, 0, 0)
     ):
-        TEST_optional_coordinates(x_left=x_left, x_center=x_center, y_top=y_top, y_center=y_center)
+        TEST_optional_coordinates(
+            x_left=x_left, x_center=x_center, x_right=x_right,
+            y_top=y_top, y_center=y_center, y_bottom=y_bottom
+        )
 
         font = pygame.font.SysFont(self.font_family if font_family is None else font_family, font_size)
         surface = font.render(text, True, color)
         (rx, ry, rw, rh) = surface.get_rect()  # The rectangle enclosing the text
 
-        if x_left is None and x_center is None:
+        if all([x is None for x in (x_left, x_center, x_right)]):
             x = round((self.width - rw)/2)  # If nothing has been set, use window center
+        elif x_left is not None:
+            x = round(x_left)
+        elif x_center is not None:
+            x = round(x_center - (rw/2))
+        elif x_right is not None:
+            x = round(self.width - x_right - rw)
         else:
-            x = round(x_center - (rw/2)) if x_center is not None else round(x_left)
+            assert False, "Logic is wrong"
 
-        if y_top is None and y_center is None:
-            y = round((self.height - rh)/2)  # If nothing has been set, use window center
+        if all([y is None for y in (y_top, y_center, y_bottom)]):
+            y = round((self.width - rh)/2)  # If nothing has been set, use window center
+        elif y_top is not None:
+            y = round(y_top)
+        elif y_center is not None:
+            y = round(y_center - (rh/2))
+        elif y_bottom is not None:
+            y = round(self.height - y_bottom - rh)
         else:
-            y = round(y_center - (rh/2)) if y_center is not None else round(y_top)
+            assert False, "Logic is wrong"
 
         self.window.blit(surface, (x, y))
 

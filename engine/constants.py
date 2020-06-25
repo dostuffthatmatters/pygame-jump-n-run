@@ -5,7 +5,7 @@ SCALING_FACTOR = 30  # pixels/meter
 GRAVITY = 9.81 * 9  # m/s^2
 
 RUN_VELOCITY = 10  # m/s
-JUMP_HEIGHT = 12  # meter
+JUMP_HEIGHT = 6  # meter
 JUMP_VELOCITY = math.sqrt(2 * GRAVITY * JUMP_HEIGHT)  # m/s
 MAX_RUN_FPS = 15
 
