@@ -167,7 +167,7 @@ class Enemy:
         game.draw_sprite_element(self.sprite.getImage(), center_position=self.position)
 
         if DRAW_HELPERS:
-            game.draw_rect_element(self.position, self.size, color=self.color, alpha=0.2)
+            game.draw_rect_element(self.position, self.size, color=self.color, alpha=0.3)
             game.draw_helper_points(self)
 
     # Draw all Enemy instances

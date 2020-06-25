@@ -17,7 +17,7 @@ from engine.constants import *
 from v6.player import Player
 from v6.enemy import Enemy
 from v6.barrier import SquareBarrier
-from v6.win_logic import check_for_win, draw_flag_pole, draw_scores
+from v6.win_logic import check_for_win
 
 sorted_scores = []
 game_finish_time = None
@@ -38,11 +38,11 @@ from v6.graphics import *
 
 # 3. Initialize players
 player_1 = Player(
-    "Max", color=(200, 0, 50), position=(21.5, 12), **player_1_sprites,
+    "Max", color=(220, 74, 123), position=(21.5, 12), **player_1_sprites,
     keymap={K_w: 'UP', K_a: 'LEFT', K_s: 'DOWN', K_d: 'RIGHT'}
 )
 player_2 = Player(
-    "Moritz", color=(50, 0, 200), position=(14.5, 12), **player_2_sprites,
+    "Moritz", color=(218, 78, 56), position=(14.5, 12), **player_2_sprites,
     keymap={K_UP: 'UP', K_LEFT: 'LEFT', K_DOWN: 'DOWN', K_RIGHT: 'RIGHT'}
 )
 
@@ -78,49 +78,23 @@ def draw():
     # 1. Draw game elements
     game.draw_background()
     SquareBarrier.draw_all(game)
+    draw_win_column(game)
     Enemy.draw_all(game)
     Player.draw_all(game)
-    draw_win_column(game)
 
     # 2. Draw scores if score-list is not empty
     draw_scores(game, sorted_scores)
 
     # 3. Draw text in top left corner
     if DRAW_HELPERS:
-        game.draw_text(text=f"collisions: {player_1.collisions}",
-                       x_left=5, y_top=5, font_size=20, color=player_1.color)
-        game.draw_text(text=f"position: {player_1.position}, velocity: {player_1.velocity}",
-                       x_left=5, y_top=30, font_size=20, color=player_1.color)
-        game.draw_text(text=f"{game.fps * SIMULATION_FRAMES_PER_DRAW} FPS (simulation) "
-                            f"{game.fps} FPS (canvas)", x_left=5, y_top=55, font_size=20)
+        draw_debug_stats(game, player_1)
     else:
-        draw_player_stats()
+        draw_player_stats(game, player_1, player_2)
+
+    draw_fps(game)
 
     # 4. Update game window (and fps)
     game.update()
-
-
-def draw_player_stats():
-
-    for i in range(3):
-        if player_1.lifes_left > i:
-            player_1_heart = heart_full_sprite.getImage()
-        else:
-            player_1_heart = heart_empty_sprite.getImage()
-
-        if player_2.lifes_left > i:
-            player_2_heart = heart_full_sprite.getImage()
-        else:
-            player_2_heart = heart_empty_sprite.getImage()
-
-        game.draw_sprite(player_1_heart, (32 + i*32, 32))
-        game.draw_sprite(player_2_heart, (game.width - 32 - i*32, 32))
-
-    for i in range(player_1.enemies_killed):
-        game.draw_sprite(dead_enemy_sprite.getImage(), (32 + i * 32, 72))
-
-    for i in range(player_2.enemies_killed):
-        game.draw_sprite(dead_enemy_sprite.getImage(), (game.width - 32 - i * 32, 72))
 
 
 def run():
@@ -128,8 +102,8 @@ def run():
     global game_finish_time
 
     # After game_finish_time has been set from inside check_for_win
-    # The game will continue to run for 6 seconds and then end
-    while game_finish_time is None or (datetime.now() - game_finish_time).seconds < 6:
+    # The game will continue to run for 8 seconds and then end
+    while game_finish_time is None or (datetime.now() - game_finish_time).seconds < 8:
 
         # 1. Attach event handler
         for event in pygame.event.get():

@@ -49,6 +49,7 @@ class Player:
         self.enemies_killed = 0
         self.old_corpses = []
         self.won = False
+        self.score = 0
 
         # Store the relations between keyboard keys and
         # movement direction i.e. WASD vs ULDR
@@ -250,6 +251,9 @@ class Player:
         if -ERROR_MARGIN <= self.velocity[0] <= ERROR_MARGIN:
             self.sprite_run.reset()
 
+        self.calculate_score()
+
+
     # Update all Player instances
     @staticmethod
     def update_all(timedelta):
@@ -284,10 +288,12 @@ class Player:
 
             # game.draw_rect_element(self.position, self.size, color=self.color, alpha=1.0)
             if DRAW_HELPERS:
+                game.draw_rect_element(self.position, self.size, color=self.color, alpha=0.4)
                 game.draw_helper_points(self)
 
-        for corpse in self.old_corpses:
-            game.draw_rect_element(corpse, self.size, color=self.color, alpha=0.3)
+        if DRAW_HELPERS:
+            for corpse in self.old_corpses:
+                game.draw_rect_element(corpse, self.size, color=self.color, alpha=0.3)
 
     # Draw all Player instances
     @staticmethod
@@ -338,3 +344,12 @@ class Player:
         #    all_collisions['FLOOR'] = [3.0, 4.2, 2.2, 4.0]
         #    -> relevant_collisions['FLOOR'] = 4.2
         return reduce_to_relevant_collisions(all_collisions)
+
+    def calculate_score(self, height_bonus=False):
+        if self.lifes_left > 0:
+            score = 10 * self.enemies_killed + self.lifes_left * 3
+            score += self.position[1] if height_bonus else 0
+            score = round(score, 2)
+        else:
+            score = 0
+        self.score = score
