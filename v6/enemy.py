@@ -2,6 +2,7 @@
 # Engine
 from engine.perlin import PerlinNoise1D
 from engine.helpers import merge_into_list_dict, get_collision
+from engine.sprite import Sprite
 
 # Constants
 from engine.constants import *
@@ -19,15 +20,14 @@ class Enemy:
             self,
             color=(75, 75, 75),
             position=(0, 0),
-            width=0.8,
-            height=1.2,
+            size=(14*0.075, 17*0.075)
     ):
 
         # All properties as lists with length 2
         # => [x-component, y-component]
         self.position = position
         self.velocity = [0.0, 0.0]
-        self.size = [width, height]
+        self.size = list(size)
 
         # The perlin noise used for the velocity
         self.noise_index = 0
@@ -38,6 +38,12 @@ class Enemy:
         )
 
         self.color = color
+
+        sprite_size = [SCALING_FACTOR * s for s in size]
+        self.sprite = Sprite(
+            spritesheet_path="assets/enemy_dude.png",
+            row_count=1, column_count=4, size=sprite_size
+        )
 
         # The collisions that are currently being detected
         self.collisions = {
@@ -115,11 +121,20 @@ class Enemy:
     # Update a single Enemy instance
     def update(self, timedelta):
         # Get the current velocity with perlin noise
-        self.noise_index = (self.noise_index + timedelta*3) % 127
+        self.noise_index = (self.noise_index + timedelta*1.5) % 127
         noise_value = self.noise_sign * self.noise[self.noise_index]
 
         # Preliminary new velocity
         new_velocity = [noise_value, 0.0]
+
+        if noise_value >= 0:
+            self.sprite.flip = (False, False)
+        else:
+            self.sprite.flip = (True, False)
+
+        if abs(noise_value) > 0.05 * ENEMY_RUN_VELOCITY:
+
+            self.sprite.update(timedelta, fps=abs(MAX_ENEMY_RUN_FPS * noise_value)/ENEMY_RUN_VELOCITY)
 
         # Set current vertical velocity according to
         # self.collisions and jump if velocity is high
@@ -150,8 +165,10 @@ class Enemy:
     # Draw a single Enemy instance
     def draw(self, game):
         # Uses the scaled draw rect method from engine.game
-        game.draw_rect_element(self.position, self.size, color=self.color)
+        game.draw_sprite_element(self.sprite.getImage(), center_position=self.position)
+
         if DRAW_HELPERS:
+            game.draw_rect_element(self.position, self.size, color=self.color, alpha=0.2)
             game.draw_helper_points(self)
 
     # Draw all Enemy instances

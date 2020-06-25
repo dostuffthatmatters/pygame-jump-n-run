@@ -11,7 +11,7 @@ JUMP_VELOCITY = math.sqrt(2 * GRAVITY * JUMP_HEIGHT)  # m/s
 ENEMY_RUN_VELOCITY = 4  # m/s
 ENEMY_JUMP_HEIGHT = 2.5  # meter
 ENEMY_JUMP_VELOCITY = math.sqrt(2 * GRAVITY * ENEMY_JUMP_HEIGHT)  # m/s
-
+MAX_ENEMY_RUN_FPS = 20
 
 """
 The game's physics-calculations are accurate, however:
@@ -28,7 +28,7 @@ x times the gravity -> 1/sqrt(x) times the jump-duration
 # For debugging purposes
 SLOWDOWN = False
 SLOWDOWN_FPS = 4
-DRAW_HELPERS = False
+DRAW_HELPERS = True
 
 ERROR_MARGIN = 0.0125
 MIN_DRAW_FPS = 30
