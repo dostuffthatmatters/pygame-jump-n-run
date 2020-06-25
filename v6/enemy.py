@@ -39,6 +39,7 @@ class Enemy:
 
         self.color = color
 
+        # Attach sprite and scale sprite to the enemies given size
         sprite_size = [SCALING_FACTOR * s for s in size]
         self.sprite = Sprite(
             spritesheet_path="assets/dungeon_spritesheets/enemy_spritesheet@8x.png",
@@ -122,23 +123,26 @@ class Enemy:
     def update(self, timedelta):
         # Get the current velocity with perlin noise
         self.noise_index = (self.noise_index + timedelta*1.5) % 127
-        noise_value = self.noise_sign * self.noise[self.noise_index]
+        run_velocity = self.noise_sign * self.noise[self.noise_index]
 
         # Preliminary new velocity
-        new_velocity = [noise_value, 0.0]
+        new_velocity = [run_velocity, 0.0]
 
-        if noise_value >= 0:
+        # Set correct sprite flip direction for the current movement direction
+        if run_velocity >= 0:
             self.sprite.flip = (False, False)
         else:
             self.sprite.flip = (True, False)
 
-        if abs(noise_value) > 0.05 * ENEMY_RUN_VELOCITY:
-            self.sprite.update(timedelta, fps=abs(MAX_ENEMY_RUN_FPS * noise_value)/ENEMY_RUN_VELOCITY)
+        # Only update the sprite if the enemy is moving
+        if abs(run_velocity) > 0.05 * ENEMY_RUN_VELOCITY:
+            # The update frequency is proportional to the velocity
+            self.sprite.update(timedelta, fps=abs(MAX_ENEMY_RUN_FPS * run_velocity)/ENEMY_RUN_VELOCITY)
 
         # Set current vertical velocity according to
         # self.collisions and jump if velocity is high
         if self.collisions['FLOOR'] is not None:
-            if abs(self.noise[self.noise_index]) > (0.7 * ENEMY_RUN_VELOCITY):
+            if abs(run_velocity) > (0.7 * ENEMY_RUN_VELOCITY):
                 if self.velocity[1] < ERROR_MARGIN:
                     new_velocity[1] = ENEMY_JUMP_VELOCITY
         else:
@@ -155,6 +159,10 @@ class Enemy:
         # the collisions with barriers
         self.update_for_collisions(new_velocity, new_position)
 
+        # Occasionally enemies somehow glitch outside the drawing area -> this is a monkey patch
+        if any([abs(p) > 200 for p in self.position]):
+            self.kill()
+
     # Update all Enemy instances
     @staticmethod
     def update_all(timedelta):
@@ -163,7 +171,7 @@ class Enemy:
 
     # Draw a single Enemy instance
     def draw(self, game):
-        # Uses the scaled draw rect method from engine.game
+        # Draw the sprite using the draw_sprite_rect method from the Game class
         game.draw_sprite_element(self.sprite.getImage(), center_position=self.position)
 
         if DRAW_HELPERS:

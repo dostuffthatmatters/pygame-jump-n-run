@@ -22,7 +22,6 @@ class SquareBarrier:
             width=1, height=1,
             color=(150, 150, 150)
     ):
-
         TEST_mandatory_coordinates(x_left=x_left, x_center=x_center, y_top=y_top, y_center=y_center)
 
         # self.position is referring to the blocks center

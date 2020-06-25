@@ -21,7 +21,7 @@ from v6.win_logic import check_for_win
 
 sorted_scores = []
 game_finish_time = None
-win_area = ((46.75, 47.25), (1.5, 12))
+win_area = ((46.5, 47.5), (1, 13))
 
 # 1. Initialize game
 game = Game(
@@ -33,10 +33,10 @@ game = Game(
 
 # 2. Initialize graphics
 # Graphics have to be import after the game has been initialized! (Pygame constraint)
-from v6.graphics import *
+from v6.graphics import * # "import *" just means "import all"
 
 
-# 3. Initialize players
+# 3. Initialize players & pass the sprites from v6.graphics
 player_1 = Player(
     "Max", color=(220, 74, 123), position=(21.5, 12), **player_1_sprites,
     keymap={K_w: 'UP', K_a: 'LEFT', K_s: 'DOWN', K_d: 'RIGHT'}
@@ -46,10 +46,12 @@ player_2 = Player(
     keymap={K_UP: 'UP', K_LEFT: 'LEFT', K_DOWN: 'DOWN', K_RIGHT: 'RIGHT'}
 )
 
+
 # 4. Initialize enemies
 for x in range(2, 32, 3):
     Enemy(position=(x, 2))
     pass
+
 
 # 5. Initialize barriers
 SquareBarrier(x_left=-1, y_top=21, width=52, height=1)  # window top
@@ -74,11 +76,10 @@ def update(timedelta):
 
 
 def draw():
-
     # 1. Draw game elements
     game.draw_background()
     SquareBarrier.draw_all(game)
-    draw_win_column(game)
+    draw_winning_pole(game)
     Enemy.draw_all(game)
     Player.draw_all(game)
 
@@ -91,9 +92,10 @@ def draw():
     else:
         draw_player_stats(game, player_1, player_2)
 
+    # 4. Draw bottom left fps
     draw_fps(game)
 
-    # 4. Update game window (and fps)
+    # 5. Update game window (and fps)
     game.update()
 
 

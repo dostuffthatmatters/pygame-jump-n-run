@@ -63,8 +63,12 @@ class Game():
 
     def draw_circle(self, x, y, radius, color=(0, 0, 0)):
         x, y, radius = math.ceil(x), math.ceil(y), math.ceil(radius)
-        gfxdraw.aacircle(self.window, x, y, radius, color)
-        gfxdraw.filled_circle(self.window, x, y, radius, color)
+        try:
+            gfxdraw.aacircle(self.window, x, y, radius, color)
+            gfxdraw.filled_circle(self.window, x, y, radius, color)
+        except:
+            print(f"x={x}, y={y}, radius={radius}, color={color}")
+            sys.exit()
 
     def draw_polygon(self, points, color=(0, 0, 0)):
         gfxdraw.aapolygon(game_window, points, color)
