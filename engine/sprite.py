@@ -3,7 +3,7 @@ import os
 import sys
 import math
 
-from engine.helpers import ends_with
+from engine.helpers import ends_with, is_number
 """
 Die Funktionen getAnimationFromFolder und getAnimationFromSpritesheet
 geben eine Liste von pygame.image.load-Bildern zurueck. 
@@ -54,7 +54,6 @@ def get_animation_from_spritesheet(
         "Parameter number_of_images too large for " \
         "specified row_count and column_count"
 
-
     spritesheet = pygame.image.load(spritesheet_path)
     spritesheet_size = spritesheet.get_size()
     sprite_size = [
@@ -92,7 +91,11 @@ def get_animation_from_spritesheet(
 class Sprite(pygame.sprite.Sprite):
 
     # properties = horizontalSprites, verticalSprites, horizontalStart, verticalStart, numberOfImages
-    def __init__(self, directory_path=None, spritesheet_path=None, **kwargs):
+    def __init__(
+            self, directory_path=None, spritesheet_path=None,
+            fps=5, size=None, scale=None, flip=(False, False),
+            **kwargs
+    ):
         assert \
             isinstance(directory_path, str) and spritesheet_path is None or \
             isinstance(spritesheet_path, str) and directory_path is None, \
@@ -103,19 +106,37 @@ class Sprite(pygame.sprite.Sprite):
         else:
             self.images = get_animation_from_spritesheet(spritesheet_path, **kwargs)
 
+        self.fps = fps
+        assert is_number(fps) and fps > 0, "fps has to be a number greater that 0"
+
+        self.size = size
+        self.scale = scale
+        assert (size is None or scale is None), "Only one of size/scale can be set at once"
+
+        self.flip = flip
+
         self.index = 0
         self.counter = 0
 
-    def update(self, nFrames=5):
-        assert nFrames > 0, "nFrames must be greater that 0"
-        # nFrames = how many game frames per animation frame update
-        self.index = (self.index + 1/nFrames) % len(self.images)
+    def update(self, timedelta, fps=None):
+        if fps is None:
+            fps = self.fps
+        assert fps > 0, "fps must be greater that 0"
+        self.index = (self.index + timedelta * fps) % len(self.images)
 
     def reset(self):
         self.index = 0
 
     def getImage(self):
-        return self.images[math.floor(self.index)]
+        image = self.images[math.floor(self.index)]
+
+        if self.size is not None:
+            image = pygame.transform.scale(image, self.size)
+        elif self.scale is not None:
+            rect_size = image.get_rect()[2:]
+            image = pygame.transform.scale(image, (rect_size[0] * self.scale, rect_size[1] * self.scale))
+
+        return pygame.transform.flip(image, self.flip[0], self.flip[1])
 
 
 if __name__ == '__main__':
@@ -125,15 +146,31 @@ if __name__ == '__main__':
     pygame.display.set_caption("Animation Beispiel")
     clock = pygame.time.Clock()
 
-    sprite_1 = Sprite(spritesheet_path="../assets/mario_run_sheet.png", row_count=1, column_count=3)
+    sprite_1 = Sprite(
+        spritesheet_path="../assets/pumpkin_dude.png",
+        fps=12, scale=3, flip=(False, False),
+        row_count=1, column_count=8
+    )
+
+    sprite_2 = Sprite(
+        spritesheet_path="../assets/wizard_dude.png",
+        fps=12, scale=3, flip=(False, False),
+        row_count=1, column_count=8
+    )
+
+    sprite_3 = Sprite(
+        spritesheet_path="../assets/dinosaur_dude.png",
+        fps=12, scale=3, flip=(False, False),
+        row_count=1, column_count=8
+    )
 
     sprite_x = 200
 
     while True:
 
-        sprite_x -= 6
-        if sprite_x < -50:
-            sprite_x = 650
+        sprite_x += 6
+        if sprite_x > 650:
+            sprite_x = -50
 
         # Check Quit Events
         for event in pygame.event.get():
@@ -142,15 +179,15 @@ if __name__ == '__main__':
                 sys.exit()
 
         # Draw background
-        screen.fill((255, 255, 0))
+        screen.fill((150, 200, 255))
 
-        image_1 = sprite_1.getImage()
-        image_1 = pygame.transform.scale(image_1, (18*4, 28*4))
-        image_1 = pygame.transform.flip(image_1, True, False)
-        image_1 = pygame.transform.rotate(image_1, 360)
-        screen.blit(image_1, (sprite_x, 200))
+        screen.blit(sprite_1.getImage(), (sprite_x, 50))
+        screen.blit(sprite_2.getImage(), (sprite_x, 165))
+        screen.blit(sprite_3.getImage(), (sprite_x, 250))
 
-        sprite_1.update(nFrames=2.5)
+        sprite_1.update(timedelta=1/30)
+        sprite_2.update(timedelta=1/30)
+        sprite_3.update(timedelta=1/30)
 
         # Update pygame screen
         pygame.display.update()
