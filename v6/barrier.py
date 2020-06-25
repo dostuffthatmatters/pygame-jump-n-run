@@ -1,7 +1,13 @@
 
+import random
+
 # Engine
+from engine.sprite import Sprite
 from engine.helpers import is_number, merge_into_list_dict, reduce_to_relevant_collisions, get_collision
 from engine.tests import TEST_mandatory_coordinates
+
+# Constants
+from engine.constants import *
 
 
 class SquareBarrier:
@@ -14,7 +20,8 @@ class SquareBarrier:
             x_left=None, x_center=None,
             y_top=None, y_center=None,
             width=1, height=1,
-            color=(150, 150, 150)
+            color=(150, 150, 150),
+            sprites=None
     ):
 
         TEST_mandatory_coordinates(x_left=x_left, x_center=x_center, y_top=y_top, y_center=y_center)
@@ -32,12 +39,15 @@ class SquareBarrier:
         # Add this new instances to the instance-list from above
         SquareBarrier.instances.append(self)
 
+    # Draw a single SquareBarrier instances
+    def draw(self, game):
+        game.draw_rect_element(self.position, self.size, color=self.color)
+
     # Draw all SquareBarrier instances
     @staticmethod
     def draw_all(game):
         for barrier in SquareBarrier.instances:
-            # Uses the scaled draw rect method from engine.game
-            game.draw_rect_element(barrier.position, barrier.size, color=barrier.color)
+            barrier.draw(game)
 
     @staticmethod
     def detect_all_collisions(player):

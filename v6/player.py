@@ -25,7 +25,7 @@ class Player:
             position=(0, 0),
             keymap=None,
             size=(1.0, 1.6),
-            sprite_path="assets/player_1.png"
+            sprite_run=None, sprite_jump_up=None, sprite_jump_down=None,
     ):
         if keymap is None:
             keymap = {
@@ -65,24 +65,15 @@ class Player:
         self.name = name
         self.color = color
 
-        # sprite_size = (16, 25)
-        # hit_box = (3, 11, 10, 16)
-        scaled_sprite_size = [self.size[0] * SCALING_FACTOR * (16/10), self.size[1] * SCALING_FACTOR * (25/16)]
-        self.sprite_run = Sprite(
-            spritesheet_path=sprite_path,
-            row_count=1, column_count=9, number_of_images=8,
-            size=scaled_sprite_size
-        )
-        self.sprite_jump_up = Sprite(
-            spritesheet_path=sprite_path,
-            row_count=1, column_count=9, column_start_index=8, number_of_images=1,
-            size=scaled_sprite_size
-        )
-        self.sprite_jump_down = Sprite(
-            spritesheet_path=sprite_path,
-            row_count=1, column_count=9, column_start_index=0, number_of_images=1,
-            size=scaled_sprite_size
-        )
+        assert all([ s is not None for s in (sprite_run, sprite_jump_up, sprite_jump_down)])
+        self.sprite_run = sprite_run
+        self.sprite_jump_up = sprite_jump_up
+        self.sprite_jump_down = sprite_jump_down
+
+        # sprite_size = (16, 25), hit_box = (3, 11, 10, 16)
+        scaled_sprite_size = [self.size[0] * SCALING_FACTOR * (16 / 10), self.size[1] * SCALING_FACTOR * (25 / 16)]
+        for s in (self.sprite_run, self.sprite_jump_up, self.sprite_jump_down):
+            s.size = scaled_sprite_size
 
         # The collisions that are currently being detected
         self.collisions = {

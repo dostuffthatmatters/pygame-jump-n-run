@@ -29,7 +29,7 @@ x times the gravity -> 1/sqrt(x) times the jump-duration
 # For debugging purposes
 SLOWDOWN = False
 SLOWDOWN_FPS = 4
-DRAW_HELPERS = True
+DRAW_HELPERS = False
 
 ERROR_MARGIN = 0.0125
 MIN_DRAW_FPS = 30

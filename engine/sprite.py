@@ -39,7 +39,7 @@ def get_animation_from_spritesheet(
 ):
     assert \
         os.path.isfile(spritesheet_path), \
-        "Parameter spritesheet_path does not refer to a file"
+        f"Parameter spritesheet_path (={repr(spritesheet_path)}) does not refer to a file"
     assert \
         ends_with(spritesheet_path, ('.png', '.jpg', '.jpeg')), \
         "The spritesheet has to be of type png/jpg"
@@ -149,19 +149,19 @@ if __name__ == '__main__':
     clock = pygame.time.Clock()
 
     sprite_1 = Sprite(
-        spritesheet_path="../assets/pumpkin_dude.png",
+        spritesheet_path="../assets/example_characters/pumpkin_dude.png",
         fps=12, scale=3, flip=(False, False),
         row_count=1, column_count=8
     )
 
     sprite_2 = Sprite(
-        spritesheet_path="../assets/wizard_dude.png",
+        spritesheet_path="../assets/example_characters/wizard_dude.png",
         fps=12, scale=3, flip=(False, False),
         row_count=1, column_count=8
     )
 
     sprite_3 = Sprite(
-        spritesheet_path="../assets/dinosaur_dude.png",
+        spritesheet_path="../assets/example_characters/dinosaur_dude.png",
         fps=12, scale=3, flip=(False, False),
         row_count=1, column_count=8
     )

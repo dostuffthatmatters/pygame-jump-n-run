@@ -41,8 +41,8 @@ class Enemy:
 
         sprite_size = [SCALING_FACTOR * s for s in size]
         self.sprite = Sprite(
-            spritesheet_path="assets/enemy_dude.png",
-            row_count=1, column_count=4, size=sprite_size
+            spritesheet_path="assets/dungeon_spritesheets/enemy_spritesheet@8x.png",
+            row_count=1, column_count=5, number_of_images=4, size=sprite_size
         )
 
         # The collisions that are currently being detected
