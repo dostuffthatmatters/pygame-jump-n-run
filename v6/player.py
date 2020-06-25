@@ -1,5 +1,6 @@
 
 # Engine
+from engine.sprite import Sprite
 from engine.helpers import merge_into_list_dict, reduce_to_relevant_collisions, get_collision
 from engine.tests import *
 
@@ -23,8 +24,8 @@ class Player:
             color=(0, 0, 0),
             position=(0, 0),
             keymap=None,
-            width=1.0,
-            height=2.0,
+            size=(1.0, 1.6),
+            sprite_path="assets/player_1.png"
     ):
         if keymap is None:
             keymap = {
@@ -40,7 +41,7 @@ class Player:
         # => [x-component, y-component]
         self.starting_position = list(position)
         self.position = [p for p in position]  # manual deepcopy
-        self.size = [width, height]
+        self.size = list(size)
         self.velocity = [0.0, 0.0]
 
         # Game specific stuff
@@ -63,6 +64,25 @@ class Player:
 
         self.name = name
         self.color = color
+
+        # sprite_size = (16, 25)
+        # hit_box = (3, 11, 10, 16)
+        scaled_sprite_size = [self.size[0] * SCALING_FACTOR * (16/10), self.size[1] * SCALING_FACTOR * (25/16)]
+        self.sprite_run = Sprite(
+            spritesheet_path=sprite_path,
+            row_count=1, column_count=9, number_of_images=8,
+            size=scaled_sprite_size
+        )
+        self.sprite_jump_up = Sprite(
+            spritesheet_path=sprite_path,
+            row_count=1, column_count=9, column_start_index=8, number_of_images=1,
+            size=scaled_sprite_size
+        )
+        self.sprite_jump_down = Sprite(
+            spritesheet_path=sprite_path,
+            row_count=1, column_count=9, column_start_index=0, number_of_images=1,
+            size=scaled_sprite_size
+        )
 
         # The collisions that are currently being detected
         self.collisions = {
@@ -187,11 +207,25 @@ class Player:
 
         # 2. Set current horizontal velocity according to
         # self.collisions and self.keypressed
-        if self.collisions['RIGHT_WALL'] is None:
-            if self.keypressed['RIGHT'] and not self.keypressed['LEFT']:
+
+        if self.keypressed['RIGHT'] and not self.keypressed['LEFT']:
+            # Flip sprite
+            self.sprite_run.flip = (False, False)
+            self.sprite_jump_up.flip = (False, False)
+            self.sprite_jump_down.flip = (False, False)
+
+            # Propose move if there is not RIGHT_WALL
+            if self.collisions['RIGHT_WALL'] is None:
                 new_velocity[0] = +RUN_VELOCITY
-        if self.collisions['LEFT_WALL'] is None:
-            if self.keypressed['LEFT'] and not self.keypressed['RIGHT']:
+
+        if self.keypressed['LEFT'] and not self.keypressed['RIGHT']:
+            # Flip sprite
+            self.sprite_run.flip = (True, False)
+            self.sprite_jump_up.flip = (True, False)
+            self.sprite_jump_down.flip = (True, False)
+
+            # Propose move if there is not LEFT_WALL
+            if self.collisions['LEFT_WALL'] is None:
                 new_velocity[0] = -RUN_VELOCITY
 
         # 3. Set current vertical velocity according to
@@ -219,6 +253,12 @@ class Player:
         # the collisions with other enemies, players and barriers
         self.update_for_collisions(new_velocity, new_position, timedelta)
 
+        if abs(self.velocity[0]) > ERROR_MARGIN:
+            self.sprite_run.update(timedelta, fps=abs(MAX_RUN_FPS * self.velocity[0])/RUN_VELOCITY)
+
+        if -ERROR_MARGIN <= self.velocity[0] <= ERROR_MARGIN:
+            self.sprite_run.reset()
+
     # Update all Player instances
     @staticmethod
     def update_all(timedelta):
@@ -229,7 +269,29 @@ class Player:
     # Draw a single Player instances
     def draw(self, game):
         if self.lifes_left > 0:
-            game.draw_rect_element(self.position, self.size, color=self.color, alpha=1.0)
+            # Uses the scaled draw rect method from engine.game
+            if self.velocity[1] > ERROR_MARGIN:
+                self.sprite_run.reset()
+                game.draw_sprite_element(
+                    self.sprite_jump_up.getImage(),
+                    center_position=self.position,
+                    sprite_offset=[0, 0.55]
+                )
+            elif self.velocity[1] < - ERROR_MARGIN:
+                self.sprite_run.reset()
+                game.draw_sprite_element(
+                    self.sprite_jump_down.getImage(),
+                    center_position=self.position,
+                    sprite_offset=[0, 0.45]
+                )
+            else:
+                game.draw_sprite_element(
+                    self.sprite_run.getImage(),
+                    center_position=self.position,
+                    sprite_offset=[0, 0.45]
+                )
+
+            # game.draw_rect_element(self.position, self.size, color=self.color, alpha=1.0)
             if DRAW_HELPERS:
                 game.draw_helper_points(self)
 

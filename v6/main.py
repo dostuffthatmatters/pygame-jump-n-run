@@ -38,16 +38,18 @@ dead_enemy_sprite = Sprite(spritesheet_path="assets/dead_enemy.png", row_count=1
 # 3. Initialize players
 player_1 = Player(
     "Max", color=(200, 0, 50), position=(21.5, 12),
-    keymap={K_w: 'UP', K_a: 'LEFT', K_s: 'DOWN', K_d: 'RIGHT'}
+    keymap={K_w: 'UP', K_a: 'LEFT', K_s: 'DOWN', K_d: 'RIGHT'},
+    sprite_path="assets/player_1.png"
 )
 player_2 = Player(
     "Moritz", color=(50, 0, 200), position=(14.5, 12),
-    keymap={K_UP: 'UP', K_LEFT: 'LEFT', K_DOWN: 'DOWN', K_RIGHT: 'RIGHT'}
+    keymap={K_UP: 'UP', K_LEFT: 'LEFT', K_DOWN: 'DOWN', K_RIGHT: 'RIGHT'},
+    sprite_path="assets/player_2.png"
 )
 
 # 4. Initialize enemies
 for x in range(2, 32, 3):
-    Enemy(position=(x, 2))
+    # Enemy(position=(x, 2))
     pass
 
 # 5. Initialize barriers

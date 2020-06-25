@@ -34,7 +34,7 @@ def get_animation_from_directory(directory_path):
 def get_animation_from_spritesheet(
         spritesheet_path,
         row_count=None, column_count=None,
-        start_row_index=0, start_column_index=0,
+        row_start_index=0, column_start_index=0,
         number_of_images=None
 ):
     assert \
@@ -62,8 +62,8 @@ def get_animation_from_spritesheet(
     ]
 
     animation_images = []
-    row_index = start_row_index
-    column_index = start_column_index
+    row_index = row_start_index
+    column_index = column_start_index
     for i in range(number_of_images):
 
         # Get current crop region

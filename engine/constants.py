@@ -7,6 +7,7 @@ GRAVITY = 9.81 * 9  # m/s^2
 RUN_VELOCITY = 10  # m/s
 JUMP_HEIGHT = 6  # meter
 JUMP_VELOCITY = math.sqrt(2 * GRAVITY * JUMP_HEIGHT)  # m/s
+MAX_RUN_FPS = 15
 
 ENEMY_RUN_VELOCITY = 4  # m/s
 ENEMY_JUMP_HEIGHT = 2.5  # meter

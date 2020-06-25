@@ -171,9 +171,9 @@ class Game():
         width, height = image.get_rect()[2:]
         self.window.blit(image, (center_position[0]-(width/2), center_position[1]-(height/2)))
 
-    def draw_sprite_element(self, image, center_position):
+    def draw_sprite_element(self, image, center_position, sprite_offset=(0, 0)):
         center_position = [
-            center_position[0] * SCALING_FACTOR,
-            self.height - center_position[1] * SCALING_FACTOR
+            (center_position[0] + sprite_offset[0]) * SCALING_FACTOR,
+            self.height - (center_position[1] + sprite_offset[1]) * SCALING_FACTOR
         ]
         self.draw_sprite(image, center_position)

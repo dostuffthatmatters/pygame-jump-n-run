@@ -133,7 +133,6 @@ class Enemy:
             self.sprite.flip = (True, False)
 
         if abs(noise_value) > 0.05 * ENEMY_RUN_VELOCITY:
-
             self.sprite.update(timedelta, fps=abs(MAX_ENEMY_RUN_FPS * noise_value)/ENEMY_RUN_VELOCITY)
 
         # Set current vertical velocity according to
