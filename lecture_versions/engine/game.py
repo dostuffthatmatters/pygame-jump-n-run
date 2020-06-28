@@ -5,12 +5,12 @@ from pygame import gfxdraw
 import sys
 
 # Engine
-from engine_v2.tests import TEST_optional_coordinates, TEST_color, TEST_object_attributes
-from engine_v2.helpers import reverse_color
+from lecture_versions.engine.tests import TEST_optional_coordinates, TEST_color, TEST_object_attributes
+from lecture_versions.engine.helpers import reverse_color
 
 # Constants
 from pygame.locals import DOUBLEBUF
-from engine_v2.constants import *
+from lecture_versions.engine.constants import *
 
 
 """

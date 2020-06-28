@@ -1,16 +1,15 @@
 
 # Engine
-from engine_v2.sprite import Sprite
-from engine_v2.helpers import merge_into_list_dict, reduce_to_relevant_collisions, get_collision
-from engine_v2.tests import *
+from lecture_versions.engine.helpers import merge_into_list_dict, reduce_to_relevant_collisions, get_collision
+from lecture_versions.engine.tests import *
 
 # Constants
 from pygame.constants import *
-from engine_v2.constants import *
+from lecture_versions.engine.constants import *
 
 # Components
-from v7.barrier import Barrier
-from v7.enemy import Enemy
+from lecture_versions.v5.barrier import Barrier
+from lecture_versions.v5.enemy import Enemy
 
 
 class Player:
@@ -24,8 +23,8 @@ class Player:
             color=(0, 0, 0),
             position=(0, 0),
             keymap=None,
-            size=(1.0, 1.6),
-            sprite_run=None, sprite_jump_up=None, sprite_jump_down=None,
+            width=1.0,
+            height=2.0,
     ):
         if keymap is None:
             keymap = {
@@ -41,7 +40,7 @@ class Player:
         # => [x-component, y-component]
         self.starting_position = list(position)
         self.position = [p for p in position]  # manual deepcopy
-        self.size = list(size)
+        self.size = [width, height]
         self.velocity = [0.0, 0.0]
 
         # Game specific stuff
@@ -49,7 +48,6 @@ class Player:
         self.enemies_killed = 0
         self.old_corpses = []
         self.won = False
-        self.score = 0
 
         # Store the relations between keyboard keys and
         # movement direction i.e. WASD vs ULDR
@@ -66,21 +64,6 @@ class Player:
         self.name = name
         self.color = color
 
-        assert \
-            all([ s is not None for s in (sprite_run, sprite_jump_up, sprite_jump_down)]), \
-            "All of (sprite_run, sprite_jump_up, sprite_jump_down) have to be specified"
-        self.sprite_run = sprite_run
-        self.sprite_jump_up = sprite_jump_up
-        self.sprite_jump_down = sprite_jump_down
-
-        # This calculation is necessary since the hit-box is not equal
-        # to the sprite box (e.g. the feather on the helment should not
-        # be an obstacle)
-        # sprite_size = (16, 25), hit_box = (3, 11, 10, 16)
-        scaled_sprite_size = [self.size[0] * SCALING_FACTOR * (16 / 10), self.size[1] * SCALING_FACTOR * (25 / 16)]
-        for s in (self.sprite_run, self.sprite_jump_up, self.sprite_jump_down):
-            s.size = scaled_sprite_size
-        
         # The collisions that are currently being detected
         self.collisions = {
             'CEILING': None,
@@ -204,27 +187,12 @@ class Player:
 
         # 2. Set current horizontal velocity according to
         # self.collisions and self.keypressed
-        if self.keypressed['RIGHT'] and not self.keypressed['LEFT']:
-            # Flip sprite
-            self.sprite_run.flip = (False, False)
-            self.sprite_jump_up.flip = (False, False)
-            self.sprite_jump_down.flip = (False, False)
-
-            # Propose move if there is not RIGHT_WALL
-            if self.collisions['RIGHT_WALL'] is None:
+        if self.collisions['RIGHT_WALL'] is None:
+            if self.keypressed['RIGHT'] and not self.keypressed['LEFT']:
                 new_velocity[0] = +RUN_VELOCITY
-        if self.keypressed['LEFT'] and not self.keypressed['RIGHT']:
-            # Flip sprite
-            self.sprite_run.flip = (True, False)
-            self.sprite_jump_up.flip = (True, False)
-            self.sprite_jump_down.flip = (True, False)
-
-            # Propose move if there is not LEFT_WALL
-            if self.collisions['LEFT_WALL'] is None:
+        if self.collisions['LEFT_WALL'] is None:
+            if self.keypressed['LEFT'] and not self.keypressed['RIGHT']:
                 new_velocity[0] = -RUN_VELOCITY
-
-        # Note: The sprite only flips if the enemy is moving. When standing
-        # still the last direction will remain
 
         # 3. Set current vertical velocity according to
         # self.collisions and self.keypressed
@@ -251,19 +219,6 @@ class Player:
         # the collisions with other enemies, players and barriers
         self.update_for_collisions(new_velocity, new_position, timedelta)
 
-        # 6. Update the sprite if the enemy is moving
-        if abs(self.velocity[0]) > ERROR_MARGIN:
-            # The update frequency is proportional to the velocity
-            self.sprite_run.update(timedelta, fps=abs(MAX_RUN_FPS * self.velocity[0])/RUN_VELOCITY)
-
-        # 7. Reset the running sprite when comming to a stop
-        if abs(self.velocity[0]) <= ERROR_MARGIN:
-            self.sprite_run.reset()
-
-        # 8. Refresh current score
-        self.calculate_score()
-
-
     # Update all Player instances
     @staticmethod
     def update_all(timedelta):
@@ -274,40 +229,12 @@ class Player:
     # Draw a single Player instances
     def draw(self, game):
         if self.lifes_left > 0:
-            # Draw the sprite using the draw_sprite_rect method from the Game class
-
-            if self.velocity[1] > ERROR_MARGIN:
-                # When jumping and velocity is upwards
-                self.sprite_run.reset()
-                game.draw_sprite_element(
-                    self.sprite_jump_up.getImage(),
-                    center_position=self.position,
-                    sprite_offset=[0, 0.55]
-                )
-            elif self.velocity[1] < - ERROR_MARGIN:
-                # When falling
-                self.sprite_run.reset()
-                game.draw_sprite_element(
-                    self.sprite_jump_down.getImage(),
-                    center_position=self.position,
-                    sprite_offset=[0, 0.45]
-                )
-            else:
-                # When on some floor (y-velocity = 0)
-                game.draw_sprite_element(
-                    self.sprite_run.getImage(),
-                    center_position=self.position,
-                    sprite_offset=[0, 0.45]
-                )
-
-            # game.draw_rect_element(self.position, self.size, color=self.color, alpha=1.0)
+            game.draw_rect_element(self.position, self.size, color=self.color, alpha=1.0)
             if DRAW_HELPERS:
-                game.draw_rect_element(self.position, self.size, color=self.color, alpha=0.4)
                 game.draw_helper_points(self)
 
-        if DRAW_HELPERS:
-            for corpse in self.old_corpses:
-                game.draw_rect_element(corpse, self.size, color=self.color, alpha=0.3)
+        for corpse in self.old_corpses:
+            game.draw_rect_element(corpse, self.size, color=self.color, alpha=0.3)
 
     # Draw all Player instances
     @staticmethod
@@ -358,15 +285,3 @@ class Player:
         #    all_collisions['FLOOR'] = [3.0, 4.2, 2.2, 4.0]
         #    -> relevant_collisions['FLOOR'] = 4.2
         return reduce_to_relevant_collisions(all_collisions)
-
-    # Calculate this current score of the player
-    # The current height only comes into play, when the players
-    # is in the winning are (flag pole)
-    def calculate_score(self, height_bonus=False):
-        if self.lifes_left > 0:
-            score = 10 * self.enemies_killed + self.lifes_left * 3
-            score += self.position[1] if height_bonus else 0
-            score = round(score, 2)
-        else:
-            score = 0
-        self.score = score

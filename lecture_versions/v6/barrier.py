@@ -2,12 +2,12 @@
 import random
 
 # Engine
-from engine_v2.sprite import Sprite
-from engine_v2.helpers import is_number, merge_into_list_dict, reduce_to_relevant_collisions, get_collision
-from engine_v2.tests import TEST_mandatory_coordinates
+from lecture_versions.engine.sprite import Sprite
+from lecture_versions.engine.helpers import is_number, merge_into_list_dict, reduce_to_relevant_collisions, get_collision
+from lecture_versions.engine.tests import TEST_mandatory_coordinates
 
 # Constants
-from engine_v2.constants import *
+from lecture_versions.engine.constants import *
 
 
 class Barrier:

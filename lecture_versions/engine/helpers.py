@@ -1,9 +1,9 @@
 
 # Engine
-from engine_v2.tests import TEST_color
+from lecture_versions.engine.tests import TEST_color
 
 # Constants
-from engine_v2.constants import *
+from lecture_versions.engine.constants import *
 
 
 """

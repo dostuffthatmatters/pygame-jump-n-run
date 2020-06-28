@@ -1,14 +1,13 @@
 
 # Engine
-from engine_v2.perlin import PerlinNoise1D
-from engine_v2.helpers import merge_into_list_dict, get_collision
-from engine_v2.sprite import Sprite
+from lecture_versions.engine.perlin import PerlinNoise1D
+from lecture_versions.engine.helpers import merge_into_list_dict, get_collision
 
 # Constants
-from engine_v2.constants import *
+from lecture_versions.engine.constants import *
 
 # Components
-from v7.barrier import Barrier
+from lecture_versions.v5.barrier import Barrier
 
 
 class Enemy:
@@ -20,14 +19,15 @@ class Enemy:
             self,
             color=(75, 75, 75),
             position=(0, 0),
-            size=(14*0.075, 17*0.075)
+            width=0.8,
+            height=1.2,
     ):
 
         # All properties as lists with length 2
         # => [x-component, y-component]
         self.position = position
         self.velocity = [0.0, 0.0]
-        self.size = list(size)
+        self.size = [width, height]
 
         # The perlin noise used for the velocity
         self.noise_index = 0
@@ -38,13 +38,6 @@ class Enemy:
         )
 
         self.color = color
-
-        # Attach sprite and scale sprite to the enemies given size
-        sprite_size = [SCALING_FACTOR * s for s in size]
-        self.sprite = Sprite(
-            spritesheet_path="assets/dungeon_spritesheets/enemy_spritesheet@8x.png",
-            row_count=1, column_count=5, number_of_images=4, size=sprite_size
-        )
 
         # The collisions that are currently being detected
         self.collisions = {
@@ -122,27 +115,16 @@ class Enemy:
     # Update a single Enemy instance
     def update(self, timedelta):
         # Get the current velocity with perlin noise
-        self.noise_index = (self.noise_index + timedelta*1.5) % 127
-        run_velocity = self.noise_sign * self.noise[self.noise_index]
+        self.noise_index = (self.noise_index + timedelta*3) % 127
+        noise_value = self.noise_sign * self.noise[self.noise_index]
 
         # Preliminary new velocity
-        new_velocity = [run_velocity, 0.0]
-
-        # Set correct sprite flip direction for the current movement direction
-        if run_velocity >= 0:
-            self.sprite.flip = (False, False)
-        else:
-            self.sprite.flip = (True, False)
-
-        # Only update the sprite if the enemy is moving
-        if abs(run_velocity) > 0.05 * ENEMY_RUN_VELOCITY:
-            # The update frequency is proportional to the velocity
-            self.sprite.update(timedelta, fps=abs(MAX_ENEMY_RUN_FPS * run_velocity)/ENEMY_RUN_VELOCITY)
+        new_velocity = [noise_value, 0.0]
 
         # Set current vertical velocity according to
         # self.collisions and jump if velocity is high
         if self.collisions['FLOOR'] is not None:
-            if abs(run_velocity) > (0.7 * ENEMY_RUN_VELOCITY):
+            if abs(self.noise[self.noise_index]) > (0.7 * ENEMY_RUN_VELOCITY):
                 if self.velocity[1] < ERROR_MARGIN:
                     new_velocity[1] = ENEMY_JUMP_VELOCITY
         else:
@@ -159,10 +141,6 @@ class Enemy:
         # the collisions with barriers
         self.update_for_collisions(new_velocity, new_position)
 
-        # Occasionally enemies somehow glitch outside the drawing area -> this is a monkey patch
-        if any([abs(p) > 200 for p in self.position]):
-            self.kill()
-
     # Update all Enemy instances
     @staticmethod
     def update_all(timedelta):
@@ -171,11 +149,9 @@ class Enemy:
 
     # Draw a single Enemy instance
     def draw(self, game):
-        # Draw the sprite using the draw_sprite_rect method from the Game class
-        game.draw_sprite_element(self.sprite.getImage(), center_position=self.position)
-
+        # Uses the scaled draw rect method from engine.game
+        game.draw_rect_element(self.position, self.size, color=self.color)
         if DRAW_HELPERS:
-            game.draw_rect_element(self.position, self.size, color=self.color, alpha=0.3)
             game.draw_helper_points(self)
 
     # Draw all Enemy instances

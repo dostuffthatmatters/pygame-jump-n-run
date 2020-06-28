@@ -5,17 +5,18 @@ import time
 from datetime import datetime
 
 # Engine
-from engine_v2.game import Game
+from lecture_versions.engine.game import Game
 
 # Constants
 from pygame.constants import *
-from engine_v2.constants import *
+from lecture_versions.engine.constants import *
 
 # Components
-from v7.player import Player
-from v7.enemy import Enemy
-from v7.barrier import Barrier
-from v7.win_logic import check_for_win
+from lecture_versions.v6.player import Player
+from lecture_versions.v6.enemy import Enemy
+from lecture_versions.v6.barrier import Barrier
+from lecture_versions.v6.win_logic import check_for_win
+
 
 sorted_scores = []
 game_finish_time = None
@@ -31,7 +32,7 @@ game = Game(
 
 # 2. Initialize graphics
 # Graphics have to be import after the game has been initialized! (Pygame constraint)
-from v7.graphics import *
+from lecture_versions.v6.graphics import *
 
 # 3. Initialize players & pass the sprites from v6.graphics
 player_1 = Player(
@@ -75,8 +76,9 @@ def update(timedelta):
 def draw():
     # 1. Draw game elements
     game.draw_background()
-    Barrier.draw_all(game)
     draw_winning_pole(game)
+
+    Barrier.draw_all(game)
     Enemy.draw_all(game)
     Player.draw_all(game)
 

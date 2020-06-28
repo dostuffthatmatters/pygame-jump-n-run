@@ -1,18 +1,12 @@
 
-import random
-
 # Engine
-from engine_v2.sprite import Sprite
-from engine_v2.helpers import is_number, merge_into_list_dict, reduce_to_relevant_collisions, get_collision
-from engine_v2.tests import TEST_mandatory_coordinates
-
-# Constants
-from engine_v2.constants import *
+from lecture_versions.engine.helpers import is_number, merge_into_list_dict, reduce_to_relevant_collisions, get_collision
+from lecture_versions.engine.tests import TEST_mandatory_coordinates
 
 
 class Barrier:
 
-    # A list of all SquareBarrier instances
+    # A list of all Barrier instances
     instances = []
 
     def __init__(
@@ -22,6 +16,7 @@ class Barrier:
             width=1, height=1,
             color=(150, 150, 150)
     ):
+
         TEST_mandatory_coordinates(x_left=x_left, x_center=x_center, y_top=y_top, y_center=y_center)
 
         # self.position is referring to the blocks center
@@ -37,15 +32,12 @@ class Barrier:
         # Add this new instances to the instance-list from above
         Barrier.instances.append(self)
 
-    # Draw a single SquareBarrier instances
-    def draw(self, game):
-        game.draw_rect_element(self.position, self.size, color=self.color)
-
-    # Draw all SquareBarrier instances
+    # Draw all Barrier instances
     @staticmethod
     def draw_all(game):
         for barrier in Barrier.instances:
-            barrier.draw(game)
+            # Uses the scaled draw rect method from engine.game
+            game.draw_rect_element(barrier.position, barrier.size, color=barrier.color)
 
     @staticmethod
     def detect_all_collisions(player):

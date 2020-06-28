@@ -3,7 +3,7 @@ import os
 import sys
 import math
 
-from engine_v2.helpers import ends_with, is_number
+from lecture_versions.engine.helpers import ends_with, is_number
 """
 Die Funktionen getAnimationFromFolder und getAnimationFromSpritesheet
 geben eine Liste von pygame.image.load-Bildern zurueck. 
@@ -148,19 +148,19 @@ if __name__ == '__main__':
     clock = pygame.time.Clock()
 
     sprite_1 = Sprite(
-        spritesheet_path="../assets/example_characters/pumpkin_dude.png",
+        spritesheet_path="../../assets/example_characters/pumpkin_dude.png",
         fps=12, scale=3, flip=(False, False),
         row_count=1, column_count=8
     )
 
     sprite_2 = Sprite(
-        spritesheet_path="../assets/example_characters/wizard_dude.png",
+        spritesheet_path="../../assets/example_characters/wizard_dude.png",
         fps=12, scale=3, flip=(False, False),
         row_count=1, column_count=8
     )
 
     sprite_3 = Sprite(
-        spritesheet_path="../assets/example_characters/dinosaur_dude.png",
+        spritesheet_path="../../assets/example_characters/dinosaur_dude.png",
         fps=12, scale=3, flip=(False, False),
         row_count=1, column_count=8
     )

@@ -1,16 +1,15 @@
 
 # Engine
-from engine_v2.sprite import Sprite
-from engine_v2.helpers import merge_into_list_dict, reduce_to_relevant_collisions, get_collision
-from engine_v2.tests import *
+from lecture_versions.engine.helpers import merge_into_list_dict, reduce_to_relevant_collisions, get_collision
+from lecture_versions.engine.tests import *
 
 # Constants
 from pygame.constants import *
-from engine_v2.constants import *
+from lecture_versions.engine.constants import *
 
 # Components
-from v7.barrier import Barrier
-from v7.enemy import Enemy
+from lecture_versions.v6.barrier import Barrier
+from lecture_versions.v6.enemy import Enemy
 
 
 class Player:
