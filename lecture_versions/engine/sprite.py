@@ -150,7 +150,8 @@ if __name__ == '__main__':
     sprite_1 = Sprite(
         spritesheet_path="../../assets/example_characters/pumpkin_dude.png",
         fps=12, scale=3, flip=(False, False),
-        row_count=1, column_count=8
+        row_count=1, column_count=8,
+        row_start_index=0, column_start_index=3, number_of_images=5
     )
 
     sprite_2 = Sprite(

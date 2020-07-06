@@ -1,7 +1,7 @@
 
 import math
 
-SCALING_FACTOR = 30  # pixels/meter
+SCALING_FACTOR = 25  # pixels/meter
 GRAVITY = 9.81 * 9  # m/s^2
 
 RUN_VELOCITY = 10  # m/s
@@ -33,7 +33,7 @@ DRAW_HELPERS = False
 
 ERROR_MARGIN = 0.0125
 MIN_DRAW_FPS = 30
-MAX_DRAW_FPS = 60
+MAX_DRAW_FPS = 120
 
 COORDINATE_PRECISION = 4  # Decimals places of coordinates being stored
 SIMULATION_FRAMES_PER_DRAW = 5

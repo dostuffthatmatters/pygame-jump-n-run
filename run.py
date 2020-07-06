@@ -1,4 +1,4 @@
 
-from v7 import run
+from lecture_versions.v6 import run
 
 run()

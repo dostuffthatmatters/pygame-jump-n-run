@@ -32,7 +32,8 @@ game = Game(
 
 # 2. Initialize graphics
 # Graphics have to be import after the game has been initialized! (Pygame constraint)
-from lecture_versions.v6.graphics import *
+# graphics_v1.py and graphics_v2.py do the exact same thing!
+from lecture_versions.v6.graphics_v1 import *
 
 # 3. Initialize players & pass the sprites from v6.graphics
 player_1 = Player(

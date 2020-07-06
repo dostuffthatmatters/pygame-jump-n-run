@@ -11,23 +11,23 @@ from lecture_versions.engine.constants import *
 
 # Spritesheets in use
 heart_spritesheet = {
-    "spritesheet_path": "lecture_versions/assets/dungeon_spritesheets/heart_spritesheet@8x.png",
+    "spritesheet_path": "assets/dungeon_spritesheets/heart_spritesheet@8x.png",
     "row_count": 1, "column_count": 3,
 }
 enemy_spritesheet = {
-    "spritesheet_path": "lecture_versions/assets/dungeon_spritesheets/enemy_spritesheet@8x.png",
+    "spritesheet_path": "assets/dungeon_spritesheets/enemy_spritesheet@8x.png",
     "row_count": 1, "column_count": 5,
 }
 player_spritesheet = {
-    "spritesheet_path": "lecture_versions/assets/dungeon_spritesheets/player_spritesheet@8x.png",
+    "spritesheet_path": "assets/dungeon_spritesheets/player_spritesheet@8x.png",
     "row_count": 2, "column_count": 9,
 }
 pole_spritesheet = {
-    "spritesheet_path": "lecture_versions/assets/dungeon_spritesheets/pole_spritesheet@8x.png",
+    "spritesheet_path": "assets/dungeon_spritesheets/pole_spritesheet@8x.png",
     "row_count": 3, "column_count": 1,
 }
 flag_spritesheet = {
-    "spritesheet_path": "lecture_versions/assets/dungeon_spritesheets/flag_spritesheet@8x.png",
+    "spritesheet_path": "assets/dungeon_spritesheets/flag_spritesheet@8x.png",
     "row_count": 1, "column_count": 4,
 }
 
