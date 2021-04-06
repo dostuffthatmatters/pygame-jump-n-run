@@ -8,6 +8,4 @@ solutions should be rather easy to understand.*
 *Hence, I did not use many libraries besides `pygame` itself 
 and did not use the concepts of inheritance and polymorphism.*
 
-*I will probably build more versions afterwards that use
-these concepts (prime usecases: Movement, Collision 
-Detection, Drawing).*
+I will not continue working on this game and v7 can be ignored.
