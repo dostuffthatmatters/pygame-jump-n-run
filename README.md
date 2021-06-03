@@ -8,4 +8,5 @@ solutions should be rather easy to understand.*
 *Hence, I did not use many libraries besides `pygame` itself 
 and did not use advanced concepts like inheritance or polymorphism.*
 
-I will not continue working on this game and v7 can be ignored.
+*Since the study program, I built this example for has been discontinued,
+I will not continue to work on it and v7 can be ignored.*
